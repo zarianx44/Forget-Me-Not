@@ -278,16 +278,71 @@ struct Task: Identifiable {
     }
     
 
+struct Screen3: View {
+    @State private var name = ""
+    @State private var phone = ""
+    @State private var medical = ""
+    @State private var caretaker = ""
     
-    struct Screen3: View {
-        @State private var name = ""
-        var body: some View {
-            Text("Screen 3")
-                .font(.largeTitle)
-            TextField("Enter your name", text: $name)
-              .multilineTextAlignment(.center)
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 25) {
+                    
+                    Group {
+                        Text("Name")
+                            .font(.headline)
+                        TextField("Enter your name", text: $name)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .font(.title3)
+                    }
+        
+                    
+                    Group {
+                        Text("Medical Info")
+                            .font(.headline)
+                        TextField("Enter your medical records", text: $medical)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .font(.title3)
+                    }
+                    
+                    Group {
+                        Text("Medication Taken")
+                            .font(.headline)
+                        TextField("Enter your phone number", text: $phone)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .font(.title3)
+                            .keyboardType(.phonePad)
+                    }
+                    
+                    Group {
+                        Text("Caretaker Phone")
+                            .font(.headline)
+                        TextField("Caretaker phone number", text: $caretaker)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .font(.title3)
+                            .keyboardType(.phonePad)
+                    }
+                    
+                    Button(action: {
+                        print("Button pressed")
+                    }) {
+                        Text("Save Info")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                            .font(.headline)
+                    }
+                    .padding(.top, 30)
+                }
+                .padding()
+            }
+            .navigationTitle("Medical ID Info")
         }
     }
+}
 
 
 
