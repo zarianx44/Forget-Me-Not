@@ -88,10 +88,23 @@ struct MenuButton: View {
 // Add this after the preview:
 struct Screen1: View {
     var body: some View {
-        Text("Screen 1")
-            .font(.largeTitle)
-    }
+            VStack(spacing: 20) {
+                Text("Zara Chaudhry")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+
+                Text("This is where you can display whatever content you like.")
+                    .font(.body)
+
+                Text("Feel free to add more views, images, or navigation.")
+                    .foregroundColor(.gray)
+            }
+            .padding()
+        }
 }
+
+  
+
 
 struct Task: Identifiable {
     let id = UUID()
@@ -264,13 +277,20 @@ struct Task: Identifiable {
         }
     }
     
+
     
     struct Screen3: View {
+        @State private var name = ""
         var body: some View {
             Text("Screen 3")
                 .font(.largeTitle)
+            TextField("Enter your name", text: $name)
+              .multilineTextAlignment(.center)
         }
     }
+
+
+
     
     struct Screen4: View {
         var body: some View {
