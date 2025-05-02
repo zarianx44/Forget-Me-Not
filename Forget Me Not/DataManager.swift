@@ -16,9 +16,11 @@ class Datamanager: ObservableObject{
         let db = Firestore.firestore()
         let ref = db.collection("Dogs") //collection name in firestone db
         ref.getDocuments{ snapshop, error in
-            guard error = nil else {
-                
+            guard error == nil else {
+                print(error!.localizedDescription)
+                return
             }
+            
             
         }
     }
