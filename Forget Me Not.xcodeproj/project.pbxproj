@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		03395A162DC3F24C000AC166 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 03395A152DC3F24C000AC166 /* FirebaseAuth */; };
+		03395A182DC3F24C000AC166 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 03395A172DC3F24C000AC166 /* FirebaseFirestore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		033959DE2DC3DF68000AC166 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +57,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				03395A162DC3F24C000AC166 /* FirebaseAuth in Frameworks */,
+				03395A182DC3F24C000AC166 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +119,8 @@
 			);
 			name = "Forget Me Not";
 			packageProductDependencies = (
+				03395A152DC3F24C000AC166 /* FirebaseAuth */,
+				03395A172DC3F24C000AC166 /* FirebaseFirestore */,
 			);
 			productName = "Forget Me Not";
 			productReference = 033959D02DC3DF67000AC166 /* Forget Me Not.app */;
@@ -195,6 +204,9 @@
 			);
 			mainGroup = 033959C72DC3DF67000AC166;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				03395A142DC3F24C000AC166 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 033959D12DC3DF67000AC166 /* Products */;
 			projectDirPath = "";
@@ -558,6 +570,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		03395A142DC3F24C000AC166 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.12.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		03395A152DC3F24C000AC166 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03395A142DC3F24C000AC166 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		03395A172DC3F24C000AC166 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03395A142DC3F24C000AC166 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 033959C82DC3DF67000AC166 /* Project object */;
 }

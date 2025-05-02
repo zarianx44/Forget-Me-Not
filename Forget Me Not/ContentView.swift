@@ -17,7 +17,7 @@ struct ContentView: View {
                     .font(.system(size: 40, weight: .bold))
                     .padding(.bottom, 10)
                 LazyVGrid(columns: columns, spacing: 20) {
-                    NavigationLink(destination: MenuView()) {
+                    NavigationLink(destination: LoginView()) {
                         VStack {
                             Image("caregiver")
                                 .resizable()
