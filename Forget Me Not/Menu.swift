@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 
 struct MenuView: View {
     let buttons: [(label: String, imageName: String, destination: AnyView)] = [
@@ -283,6 +284,7 @@ struct Screen3: View {
     @State private var phone = ""
     @State private var medical = ""
     @State private var caretaker = ""
+    @State private var showCallAlert = false
     
     var body: some View {
         NavigationView {
@@ -325,7 +327,7 @@ struct Screen3: View {
                     }
                     
                     Button(action: {
-                        print("Button pressed")
+                        showCallAlert = true
                     }) {
                         Text("Save Info")
                             .frame(maxWidth: .infinity)
@@ -342,14 +344,130 @@ struct Screen3: View {
             .navigationTitle("Medical ID Info")
         }
     }
+    
+    func makePhoneCall(phoneNumber: String) {
+            guard let url = URL(string: "tel://\(phoneNumber)"),
+                  UIApplication.shared.canOpenURL(url) else {
+                return
+            }
+            UIApplication.shared.open(url)
+        }
 }
 
 
 
     
-    struct Screen4: View {
-        var body: some View {
-            Text("Screen 4")
-                .font(.largeTitle)
+struct LostItem: Identifiable {
+    let id = UUID()
+    let name: String
+    let imageName: String
+    let audioFileName: String
+}
+
+struct Screen4: View {
+    @State private var items: [LostItem] = [
+        LostItem(name: "Keys", imageName: "keys", audioFileName: "keys.m4a"),
+        LostItem(name: "Wallet", imageName: "wallet", audioFileName: "wallet.m4a")
+    ]
+    
+    @State private var audioPlayer: AVAudioPlayer?
+    @State private var showRecordingSheet = false
+    
+    let columns = [GridItem(.flexible()), GridItem(.flexible())]
+    
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVGrid(columns: columns, spacing: 20) {
+                    ForEach(items) { item in
+                        VStack {
+                            Button(action: {
+                                playAudio(named: item.audioFileName)
+                            }) {
+                                ZStack(alignment: .bottomTrailing) {
+                                    Image(item.imageName)
+                                        .resizable()
+                                        .aspectRatio(1, contentMode: .fit)
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color.gray.opacity(0.2))
+                                        .cornerRadius(15)
+                                    
+                                    Image(systemName: "play.circle.fill")
+                                        .resizable()
+                                        .frame(width: 30, height: 30)
+                                        .foregroundColor(.blue)
+                                        .padding(8)
+                                }
+                            }
+                            Text(item.name)
+                                .font(.headline)
+                                .padding(.top, 5)
+                        }
+                    }
+                }
+                .padding()
+            }
+            
+            Button(action: {
+                showRecordingSheet = true
+            }) {
+                Text("Add / Edit Item Recording")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                    .padding()
+            }
+            .sheet(isPresented: $showRecordingSheet) {
+                AddRecordingView()
+            }
+            .navigationTitle("Lost Items")
         }
     }
+    
+    func playAudio(named name: String) {
+        guard let url = Bundle.main.url(forResource: name, withExtension: nil) else {
+            print("Audio file not found: \(name)")
+            return
+        }
+        do {
+            audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer?.play()
+        } catch {
+            print("Error playing audio: \(error.localizedDescription)")
+        }
+    }
+}
+
+struct AddRecordingView: View {
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Add or Edit Item Recording")
+                .font(.title2)
+                .padding(.top)
+            
+            Spacer()
+            
+            Text("Voice recording feature goes here.")
+                .foregroundColor(.gray)
+                .padding()
+                .multilineTextAlignment(.center)
+            
+            Spacer()
+            
+            Button("Done") {
+                dismiss()
+            }
+            .font(.headline)
+            .padding()
+            .background(Color.green)
+            .foregroundColor(.white)
+            .cornerRadius(12)
+        }
+        .padding()
+    }
+}
