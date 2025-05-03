@@ -7,13 +7,11 @@
 
 import SwiftUI
 
-struct Dog: Identifiable{
-    var id: String
-    var breed: String
-    
-    
+struct ClientInfo: Identifiable{
+   
     var fullName: String
     var medInfo: String
     var phoneNumber: String
-    var address: String 
+    var address: String
+    var id: String
 }

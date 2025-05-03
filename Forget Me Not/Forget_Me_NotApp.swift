@@ -30,6 +30,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 
 struct Forget_Me_NotApp: App {
+    @StateObject var dataManager = DataManager()
 
   // register app delegate for Firebase setup
 
@@ -43,7 +44,8 @@ struct Forget_Me_NotApp: App {
 
       NavigationView {
 
-        ContentView()
+        ListView()
+              .environmentObject(dataManager)
 
       }
 
