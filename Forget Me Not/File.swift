@@ -10,13 +10,19 @@ import Firebase
 import FirebaseAuth
 
 struct LoginView: View {
+    @State private var userIsLoggedIn = false
+    @State private var isCheckingAuth = true
+
+    @State private var isLoginMode = false
+    
+    @AppStorage("isLoggedIn") var isLoggedIn: Bool = false
+
     @State private var email = ""
     @State private var password = ""
-    @State private var userIsLoggedIn = false
     
     var body: some View {
         if userIsLoggedIn{
-            ListView()
+            ContentView()
         } else{
             content
         }
@@ -69,28 +75,31 @@ struct LoginView: View {
                     .frame(width: 350, height: 1)
                     .padding(.bottom, 20)
                 
-                Button{
-                    register()
-                }label: {
-                    Text("Sign Up")
+                Button {
+                    if isLoginMode {
+                        login()
+                    } else {
+                        register()
+                    }
+                } label: {
+                    Text(isLoginMode ? "Login" : "Sign Up")
                         .bold()
                         .frame(width: 250, height: 60)
                         .foregroundColor(.white)
                         .font(.system(size: 25))
-                    
-                    
                         .background(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
                                 .fill(.linearGradient(colors: [.teal, .blue], startPoint: .top , endPoint: .bottomTrailing))
                         )
                 }
+
                 .padding(.top)
                 .offset(y:100)
                 
-                Button{
-                    login()
-                }label: {
-                    Text("Already have an account? Login here")
+                Button {
+                    isLoginMode.toggle()
+                } label: {
+                    Text(isLoginMode ? "Don't have an account? Sign up here" : "Already have an account? Login here")
                         .bold()
                         .underline()
                 }
@@ -101,12 +110,14 @@ struct LoginView: View {
                 
             }
             .frame(width: 350)
-            .onAppear{
-                Auth.auth().addStateDidChangeListener{ auth, user in if user != nil{
-                    userIsLoggedIn.toggle()
-                }
+            .onAppear {
+                Auth.auth().addStateDidChangeListener { auth, user in
+                    if user != nil {
+                        userIsLoggedIn = true
+                    }
                 }
             }
+
         }
     }
     func register(){
@@ -116,12 +127,18 @@ struct LoginView: View {
         }
     }
     
-    func login(){
-        Auth.auth().signIn(withEmail: email, password: password) { result, error in if error != nil{
-            print(error!.localizedDescription)
-        }
+
+    func login() {
+        Auth.auth().signIn(withEmail: email, password: password) { result, error in
+            if let error = error {
+                print(error.localizedDescription)
+            } else {
+                isLoggedIn = true
+            }
         }
     }
+
+
     
 }
 

@@ -10,6 +10,8 @@ import SwiftUI
 import SwiftUI
 
 struct ListView: View {
+    @AppStorage("isLoggedIn") var isLoggedIn: Bool = false
+    
     @EnvironmentObject var dataManager: DataManager
     @State private var showPopup = false
     @Environment(\.dismiss) var dismiss // Access to the dismiss action
