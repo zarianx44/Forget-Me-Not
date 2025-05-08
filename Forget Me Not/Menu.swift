@@ -2,54 +2,100 @@ import SwiftUI
 import AVFoundation
 import UIKit
 
+
 struct MenuView: View {
-    let buttons: [(label: String, imageName: String, destination: AnyView)] = [
-        ("About Me", "user", AnyView(Screen1())),
-        ("Task", "task", AnyView(Screen2())),
-        ("lost", "information", AnyView(Screen3())),
-        ("Item", "lostitems", AnyView(Screen4()))
-    ]
-    
+    @StateObject private var reminderVM = ReminderViewModel()
+
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
-    
+
+    let buttons: [(label: String, imageName: String, destination: (ReminderViewModel) -> AnyView)] = [
+        ("Task", "task", { vm in AnyView(Screen2().environmentObject(vm)) }),
+        ("About Me", "user", { _ in AnyView(Screen1()) }),
+        ("lost", "information", { _ in AnyView(Screen3()) }),
+        ("Item", "lostitems", { _ in AnyView(Screen4()) })
+    ]
+
     var body: some View {
         NavigationStack {
-            VStack {
-                Text("Menu")
-                    .font(.largeTitle)
-                    .bold()
-                    .padding(.top)
+            ScrollView {
+                VStack(spacing: 20) {
+                    Text("Menu")
+                        .font(.largeTitle)
+                        .bold()
+                        .padding(.top)
 
-                LazyVGrid(columns: columns, spacing: 20) {
-                    ForEach(0..<buttons.count, id: \.self) { index in
-                        let button = buttons[index]
-                        
-                        NavigationLink(destination: button.destination) {
-                            VStack(spacing: 10) {
-                                Image(button.imageName)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill) // fill the space instead of fitting inside
-                                    .frame(width: 100, height: 100)
-                                    .clipped() // ensures it doesn't overflow
+                    // Menu Buttons
+                    LazyVGrid(columns: columns, spacing: 20) {
+                        ForEach(buttons, id: \.label) { button in
+                            NavigationLink(destination: button.destination(reminderVM)) {
+                                VStack(spacing: 10) {
+                                    Image(button.imageName)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 100, height: 100)
+                                        .clipped()
 
-                                
-                                Text(button.label)
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
+                                    Text(button.label)
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                }
+                                .frame(maxWidth: .infinity, minHeight: 150)
+                                .background(Color.blue.opacity(0.15))
+                                .cornerRadius(20)
                             }
-                            .frame(maxWidth: .infinity, minHeight: 150)
-                            .background(Color.blue.opacity(0.15))
-                            .cornerRadius(20)
                         }
                     }
+                    .padding(.horizontal)
+
+                    // Upcoming Events Preview
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Upcoming Events")
+                            .font(.title2)
+                            .bold()
+                            .padding(.leading)
+
+                        if reminderVM.sortedTasks.isEmpty {
+                            Text("No upcoming tasks.")
+                                .foregroundColor(.gray)
+                                .padding(.horizontal)
+                        } else {
+                            ForEach(reminderVM.sortedTasks.prefix(3)) { task in
+                                HStack(spacing: 16) {
+                                    Image(systemName: task.iconName)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 40, height: 40)
+                                        .padding()
+                                        .background(colorFromHex(task.colorHex))
+                                        .clipShape(Circle())
+                                        .shadow(radius: 2)
+
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(task.title)
+                                            .font(.headline)
+                                        Text(task.timeRange)
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                    }
+
+                                    Spacer()
+                                }
+                                .padding()
+                                .background(Color.teal.opacity(0.2))
+                                .cornerRadius(20)
+                                .padding(.horizontal, 10)
+                            }
+                        }
+                    }
+                    .padding(.bottom)
+
+                    Spacer()
                 }
-                .padding()
-                
-                Spacer()
             }
         }
     }
 }
+
 
 
 // MARK: - Reusable Button View
@@ -62,260 +108,544 @@ struct MenuButton: View {
             Image(systemName: imageName)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 60, height: 60)
+                .frame(width: 80, height: 80)  // Increase size of the icon
                 .padding(.leading)
 
             Text(label)
-                .font(.title2)
+                .font(.title2) // This will automatically scale based on the user’s preference
                 .bold()
                 .padding()
+                .foregroundColor(.primary)  // Ensure contrast for readability
 
             Spacer()
         }
-        .frame(maxWidth: .infinity, minHeight: 80)
+        .frame(maxWidth: .infinity, minHeight: 100)  // Increase the button size
         .background(Color.blue.opacity(0.2))
         .cornerRadius(15)
     }
 }
 
+
 #Preview {
     MenuView()
 }
 // ... all your MenuView and MenuButton code above
-
-#Preview {
-    MenuView()
+struct PersonalFact: Identifiable, Codable {
+    let id: UUID
+    var category: String
+    var value: String
+    var colorHex: String
 }
- 
+
+struct FamilyMember: Identifiable, Codable {
+    let id: UUID
+    var name: String
+    var photoData: Data?
+}
+
+class PersonalStore: ObservableObject {
+    @Published var facts: [PersonalFact] = []
+    private let key = "personalFacts"
+
+    init() {
+        load()
+    }
+
+    func add(fact: PersonalFact) {
+        facts.append(fact)
+        save()
+    }
+
+    func save() {
+        if let data = try? JSONEncoder().encode(facts) {
+            UserDefaults.standard.set(data, forKey: key)
+        }
+    }
+
+    func load() {
+        if let data = UserDefaults.standard.data(forKey: key),
+           let decoded = try? JSONDecoder().decode([PersonalFact].self, from: data) {
+            facts = decoded
+        }
+    }
+}
+
+class FamilyStore: ObservableObject {
+    @Published var members: [FamilyMember] = []
+    private let key = "familyMembersData"
+
+    init() {
+        load()
+    }
+
+    func add(member: FamilyMember) {
+        members.append(member)
+        save()
+    }
+
+    func save() {
+        if let data = try? JSONEncoder().encode(members) {
+            UserDefaults.standard.set(data, forKey: key)
+        }
+    }
+
+    func load() {
+        if let data = UserDefaults.standard.data(forKey: key),
+           let decoded = try? JSONDecoder().decode([FamilyMember].self, from: data) {
+            members = decoded
+        }
+    }
+}
 
 struct Screen1: View {
-    @State private var name = UserDefaults.standard.string(forKey: "name") ?? ""
-    @State private var favoriteSongs: [String] = UserDefaults.standard.object(forKey: "favoriteSongs") as? [String] ?? []
-    @State private var favoriteMovies: [String] = UserDefaults.standard.object(forKey: "favoriteMovies") as? [String] ?? []
-    @State private var familyMembers: [String] = UserDefaults.standard.object(forKey: "familyMembers") as? [String] ?? []
-    @State private var showAddItemSheet = false
-    @State private var currentItem = ""
-    @State private var currentCategory = "Song"
+    @StateObject private var store = PersonalStore()
+    @StateObject private var familyStore = FamilyStore()
+    @State private var showAddSheet = false
+    @State private var showAddFamily = false
+    @State private var selectedFact: PersonalFact? = nil
+
+    var groupedFacts: [String: [PersonalFact]] {
+        Dictionary(grouping: store.facts, by: { $0.category })
+    }
 
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
-                    // Welcome Section
-                    VStack {
-                        Text("Hello, \(name)!")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                        Text("Welcome to your customizable page")
-                            .font(.title2)
-                            .padding(.top, 5)
+                VStack(spacing: 16) {
+                  
+
+                    ForEach(groupedFacts.keys.sorted(), id: \.self) { category in
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(category)
+                                .font(.headline)
+                                .padding(.horizontal)
+
+                            // Inside each category section
+                            FlowLayoutView(items: groupedFacts[category] ?? []) { fact in
+                                Text(fact.value)
+                                    .font(.headline) // makes the text bigger
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(colorFromHex(fact.colorHex).opacity(0.3))
+                                    .cornerRadius(10)
+                                    .onTapGesture {
+                                        selectedFact = fact
+                                    }
+                            }
+
+                            .padding(.horizontal)
+
+                        }
+                        .padding(.vertical, 8)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        .padding(.horizontal)
                     }
 
-                    // Favorite Songs Section
-                    VStack(alignment: .leading) {
-                        Text("Favorite Songs")
-                            .font(.title)
-                            .fontWeight(.bold)
+                    Text("Family Members")
+                        .font(.title2.bold())
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
 
-                        ForEach(favoriteSongs, id: \.self) { song in
-                            Text(song)
-                                .font(.headline)
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 16) {
+                        ForEach(familyStore.members) { member in
+                            VStack {
+                                if let data = member.photoData, let uiImage = UIImage(data: data) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 100, height: 100)
+                                        .clipShape(Circle())
+                                } else {
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(width: 100, height: 100)
+                                        .overlay(Image(systemName: "person.fill").font(.title))
+                                }
+                                Text(member.name)
+                                    .font(.headline)
+                                    .lineLimit(1)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+
+                    HStack {
+                        Button(action: {
+                            showAddSheet = true
+                        }) {
+                            HStack {
+                                Image(systemName: "plus")
+                                Text("Add Info")
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
                         }
 
                         Button(action: {
-                            currentCategory = "Song"
-                            showAddItemSheet = true
+                            showAddFamily = true
                         }) {
-                            Text("Add Song")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
+                            HStack {
+                                Image(systemName: "plus")
+                                Text("Add Family")
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.purple)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
                         }
                     }
-                    .padding()
-
-                    // Favorite Movies Section
-                    VStack(alignment: .leading) {
-                        Text("Favorite Movies")
-                            .font(.title)
-                            .fontWeight(.bold)
-
-                        ForEach(favoriteMovies, id: \.self) { movie in
-                            Text(movie)
-                                .font(.headline)
-                        }
-
-                        Button(action: {
-                            currentCategory = "Movie"
-                            showAddItemSheet = true
-                        }) {
-                            Text("Add Movie")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.green)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                        }
-                    }
-                    .padding()
-
-                    // Family Members Section
-                    VStack(alignment: .leading) {
-                        Text("Family Members")
-                            .font(.title)
-                            .fontWeight(.bold)
-
-                        ForEach(familyMembers, id: \.self) { member in
-                            Text(member)
-                                .font(.headline)
-                        }
-
-                        Button(action: {
-                            currentCategory = "Family"
-                            showAddItemSheet = true
-                        }) {
-                            Text("Add Family Member")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.orange)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                        }
-                    }
-                    .padding()
+                    .padding(.horizontal)
                 }
-                .padding()
+                .padding(.top)
             }
-            .navigationTitle("Personalized Page")
-            .sheet(isPresented: $showAddItemSheet) {
-                AddItemSheet(currentCategory: $currentCategory, item: $currentItem, addItemAction: saveItem)
-            }
+            .navigationTitle("About Me")
         }
-    }
-
-    // Save item function
-    func saveItem() {
-        switch currentCategory {
-        case "Song":
-            favoriteSongs.append(currentItem)
-            UserDefaults.standard.set(favoriteSongs, forKey: "favoriteSongs")
-        case "Movie":
-            favoriteMovies.append(currentItem)
-            UserDefaults.standard.set(favoriteMovies, forKey: "favoriteMovies")
-        case "Family":
-            familyMembers.append(currentItem)
-            UserDefaults.standard.set(familyMembers, forKey: "familyMembers")
-        default:
-            break
+        .sheet(isPresented: $showAddSheet) {
+            AddInfoView(store: store)
         }
-        currentItem = ""
+        .sheet(isPresented: $showAddFamily) {
+            AddFamilyMemberView(store: familyStore)
+        }
+        .sheet(item: $selectedFact) { fact in
+            EditInfoView(store: store, fact: fact)
+        }
     }
 }
+// Simple flow layout view that wraps items in horizontal flow
+struct FlowLayoutView<Data: RandomAccessCollection, Content: View>: View where Data.Element: Identifiable {
+    let items: Data
+    let content: (Data.Element) -> Content
 
-// Add Item Sheet for adding songs, movies, or family members
-struct AddItemSheet: View {
-    @Binding var currentCategory: String
-    @Binding var item: String
-    var addItemAction: () -> Void
+    @State private var totalHeight: CGFloat = .zero
 
     var body: some View {
-        VStack {
-            Text("Add a New \(currentCategory)")
-                .font(.title)
-                .fontWeight(.bold)
-                .padding()
+        GeometryReader { geometry in
+            self.generateContent(in: geometry)
+        }
+        .frame(height: totalHeight)
+    }
 
-            TextField("Enter \(currentCategory.lowercased())", text: $item)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
+    private func generateContent(in geometry: GeometryProxy) -> some View {
+        var width = CGFloat.zero
+        var height = CGFloat.zero
 
-            Button(action: {
-                addItemAction()
-                item = ""
-            }) {
-                Text("Save \(currentCategory)")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
+        return ZStack(alignment: .topLeading) {
+            ForEach(items) { item in
+                content(item)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.3))
+                    )
+                    .alignmentGuide(.leading) { dimension in
+                        if abs(width - dimension.width) > geometry.size.width {
+                            width = 0
+                            height -= dimension.height
+                        }
+                        let result = width
+                        if item.id == items.last?.id {
+                            width = 0 // reset at end
+                        } else {
+                            width -= dimension.width + 8
+                        }
+                        return result
+                    }
+                    .alignmentGuide(.top) { _ in
+                        let result = height
+                        if item.id == items.last?.id {
+                            height = 0 // reset at end
+                        }
+                        return result
+                    }
             }
-            .padding()
+        }
+        .background(viewHeightReader($totalHeight))
+    }
 
-            Button(action: {
-                item = ""
-            }) {
-                Text("Cancel")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.red)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-            }
-            .padding()
+    private func viewHeightReader(_ binding: Binding<CGFloat>) -> some View {
+        GeometryReader { proxy in
+            Color.clear
+                .preference(key: HeightPreferenceKey.self, value: proxy.size.height)
+        }
+        .onPreferenceChange(HeightPreferenceKey.self) { binding.wrappedValue = $0 }
+    }
+
+    struct HeightPreferenceKey: PreferenceKey {
+        static var defaultValue: CGFloat { 0 } // ✅ Use computed property
+
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            value = max(value, nextValue())
         }
     }
+
 }
 
-struct Screen1_Previews: PreviewProvider {
-    static var previews: some View {
-        Screen1()
+struct AddInfoView: View {
+    @Environment(\ .dismiss) var dismiss
+    @ObservedObject var store: PersonalStore
+
+    @State private var category = ""
+    @State private var value = ""
+    @State private var selectedColor: Color = .blue
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Add Information")
+                .font(.title.bold())
+
+            TextField("Category (e.g., Favorite Food)", text: $category)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.horizontal)
+
+            TextField("Your Answer", text: $value)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.horizontal)
+
+            Text("Choose a Color")
+            HStack {
+                ForEach([Color.red, .green, .blue, .orange, .purple, .pink], id: \ .self) { color in
+                    Circle()
+                        .fill(color)
+                        .frame(width: 30, height: 30)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.black, lineWidth: selectedColor == color ? 2 : 0)
+                        )
+                        .onTapGesture {
+                            selectedColor = color
+                        }
+                }
+            }
+
+            Button("Save") {
+                let fact = PersonalFact(
+                    id: UUID(),
+                    category: category,
+                    value: value,
+                    colorHex: hexString(from: selectedColor)
+                )
+                store.add(fact: fact)
+                dismiss()
+            }
+            .disabled(category.isEmpty || value.isEmpty)
+            .padding()
+            .background(Color.green)
+            .foregroundColor(.white)
+            .cornerRadius(10)
+
+            Spacer()
+        }
+        .padding()
     }
 }
 
+struct EditInfoView: View {
+    @Environment(\ .dismiss) var dismiss
+    @ObservedObject var store: PersonalStore
+
+    @State var fact: PersonalFact
+    @State private var selectedColor: Color
+
+    init(store: PersonalStore, fact: PersonalFact) {
+        self.store = store
+        _fact = State(initialValue: fact)
+        _selectedColor = State(initialValue: colorFromHex(fact.colorHex))
+    }
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Edit Info")
+                .font(.title.bold())
+
+            TextField("Category", text: $fact.category)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+
+            TextField("Value", text: $fact.value)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+
+            Text("Choose a Color")
+            HStack {
+                ForEach([Color.red, .green, .blue, .orange, .purple, .pink], id: \ .self) { color in
+                    Circle()
+                        .fill(color)
+                        .frame(width: 30, height: 30)
+                        .overlay(
+                            Circle().stroke(Color.black, lineWidth: selectedColor == color ? 2 : 0)
+                        )
+                        .onTapGesture {
+                            selectedColor = color
+                        }
+                }
+            }
+
+            Button("Save Changes") {
+                let updated = PersonalFact(id: fact.id, category: fact.category, value: fact.value, colorHex: hexString(from: selectedColor))
+                if let index = store.facts.firstIndex(where: { $0.id == fact.id }) {
+                    store.facts[index] = updated
+                    store.save()
+                }
+                dismiss()
+            }
+            .padding()
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(10)
+
+            Button("Delete") {
+                store.facts.removeAll { $0.id == fact.id }
+                store.save()
+                dismiss()
+            }
+            .padding()
+            .background(Color.red)
+            .foregroundColor(.white)
+            .cornerRadius(10)
+
+            Spacer()
+        }
+        .padding()
+    }
+}
+
+struct AddFamilyMemberView: View {
+    @Environment(\ .dismiss) var dismiss
+    @ObservedObject var store: FamilyStore
+    @State private var name = ""
+    @State private var image: UIImage?
+    @State private var showPicker = false
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("New Family Member")
+                .font(.title.bold())
+
+            TextField("Enter name", text: $name)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.horizontal)
+
+            Button("Choose Photo") {
+                showPicker = true
+            }
+            .padding()
+            .background(Color.orange)
+            .foregroundColor(.white)
+            .cornerRadius(10)
+
+            if let image = image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 150, height: 150)
+                    .clipShape(Circle())
+            }
+
+            Button("Save") {
+                let newMember = FamilyMember(id: UUID(), name: name, photoData: image?.jpegData(compressionQuality: 0.8))
+                store.add(member: newMember)
+                dismiss()
+            }
+            .disabled(name.isEmpty)
+            .padding()
+            .background(Color.green)
+            .foregroundColor(.white)
+            .cornerRadius(10)
+
+            Spacer()
+        }
+        .sheet(isPresented: $showPicker) {
+            ImagePicker(selectedImage: $image, isImagePickerPresented: $showPicker)
+        }
+        .padding()
+    }
+}
+
+// MARK: - Helper
+func hexString(from color: Color) -> String {
+    let uiColor = UIColor(color)
+    var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0
+    uiColor.getRed(&red, green: &green, blue: &blue, alpha: nil)
+    return String(format: "#%02X%02X%02X", Int(red * 255), Int(green * 255), Int(blue * 255))
+}
+
+func colorFromHex(_ hex: String) -> Color {
+    var hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+    var int: UInt64 = 0
+    Scanner(string: hex).scanHexInt64(&int)
+    let r = Double((int >> 16) & 0xFF) / 255.0
+    let g = Double((int >> 8) & 0xFF) / 255.0
+    let b = Double(int & 0xFF) / 255.0
+    return Color(red: r, green: g, blue: b)
+}
 
 
 
-// MARK: - Task Model
-struct Task: Identifiable, Codable {  // Make sure Task conforms to Codable
-    let id = UUID()
+struct Task: Identifiable, Codable {
+    let id: UUID
     let timeRange: String
     let title: String
     let duration: String
     let iconName: String
     var isCompleted: Bool
+    let scheduledTime: Date
+    let colorHex: String  // Store as a hex string like "#FF0000"
+
 }
 
-// MARK: - ReminderViewModel for Managing Tasks
+
+
 class ReminderViewModel: ObservableObject {
     @Published var tasks: [Task] = []
 
     init() {
-        loadTasks() // Load tasks from UserDefaults when initializing
+        loadTasks()
     }
 
-    // Add a new task
-    func addTask(timeRange: String, title: String, duration: String, iconName: String) {
-        let newTask = Task(timeRange: timeRange, title: title, duration: duration, iconName: iconName, isCompleted: false)
+    func addTask(timeRange: String, title: String, duration: String, iconName: String, scheduledTime: Date, colorHex: String) {
+        let newTask = Task(
+            id: UUID(),
+            timeRange: timeRange,
+            title: title,
+            duration: duration,
+            iconName: iconName,
+            isCompleted: false,
+            scheduledTime: scheduledTime,
+            colorHex: colorHex
+        )
         tasks.append(newTask)
-        saveTasks() // Save tasks after adding a new task
+        saveTasks()
     }
 
-    // Save tasks to UserDefaults
     func saveTasks() {
         if let encoded = try? JSONEncoder().encode(tasks) {
             UserDefaults.standard.set(encoded, forKey: "tasks")
         }
     }
 
-    // Load tasks from UserDefaults
     func loadTasks() {
         if let data = UserDefaults.standard.data(forKey: "tasks"),
-           let decodedTasks = try? JSONDecoder().decode([Task].self, from: data) {
-            tasks = decodedTasks
+           let decoded = try? JSONDecoder().decode([Task].self, from: data) {
+            tasks = decoded
         }
+    }
+
+    var sortedTasks: [Task] {
+        tasks.sorted(by: { $0.scheduledTime < $1.scheduledTime })
     }
 }
 
 
-// MARK: - Screen2 (Reminder Screen)
+
 struct Screen2: View {
-    @StateObject var viewModel = ReminderViewModel()  // This will hold and manage tasks
+    @EnvironmentObject var viewModel: ReminderViewModel
     @State private var showNewTaskSheet = false
 
     var body: some View {
@@ -323,14 +653,13 @@ struct Screen2: View {
             ZStack(alignment: .bottomTrailing) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        ForEach(viewModel.tasks) { task in
+                        ForEach(viewModel.sortedTasks) { task in
                             TaskRow(task: task, viewModel: viewModel)
                         }
                     }
                     .padding()
                 }
-                
-                // Floating "+" Button
+
                 Button(action: {
                     showNewTaskSheet = true
                 }) {
@@ -344,26 +673,26 @@ struct Screen2: View {
                 }
                 .padding()
                 .sheet(isPresented: $showNewTaskSheet) {
-                    NewTaskView(viewModel: viewModel) // Passing the viewModel to the NewTaskView
+                    NewTaskView(viewModel: viewModel)
                 }
-
             }
-            .navigationTitle("Reminders")
+            .navigationTitle("Upcoming Events")
         }
     }
 }
 
+
 struct TaskRow: View {
     var task: Task
     @ObservedObject var viewModel: ReminderViewModel
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             VStack {
                 Image(systemName: task.iconName)
                     .foregroundColor(.white)
                     .padding()
-                    .background(Color.blue)
+                    .background(colorFromHex(task.colorHex))
                     .clipShape(Circle())
                     .frame(width: 50, height: 50)
                 Spacer()
@@ -386,16 +715,12 @@ struct TaskRow: View {
             Spacer()
 
             Button(action: {
-                // Toggle task completion status and remove if completed
                 if let index = viewModel.tasks.firstIndex(where: { $0.id == task.id }) {
                     viewModel.tasks[index].isCompleted.toggle()
-
-                    // If the task is completed, remove it from the list
                     if viewModel.tasks[index].isCompleted {
                         viewModel.tasks.remove(at: index)
                     }
-
-                    viewModel.saveTasks()  // Save the updated tasks
+                    viewModel.saveTasks()
                 }
             }) {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
@@ -411,130 +736,160 @@ struct TaskRow: View {
 
 
 
-
 struct NewTaskView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var viewModel: ReminderViewModel
-    
+
     @State private var taskTitle = ""
     @State private var taskTimeRange = Date()
     @State private var taskDuration = 30
-    @State private var taskIcon = "alarm.fill"  // Default icon
+    @State private var taskIcon = "alarm.fill"
     @State private var selectedColor: Color = .green
-    
+
     let durations = [15, 30, 45, 60, 90]
-    
+    let availableIcons = ["alarm.fill", "sun.max.fill", "heart.fill", "book.fill", "bed.double.fill", "leaf.fill"]
+
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                // Title Section
-                Text("New Task")
-                    .font(.largeTitle)
-                    .bold()
+            ScrollView {
+                VStack(spacing: 20) {
+                    Text("New Task")
+                        .font(.largeTitle)
+                        .bold()
+                        .padding(.top)
+
+                    TextField("e.g. Read a Book", text: $taskTitle)
+                        .font(.title3)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        .shadow(radius: 5)
+
+                    VStack(alignment: .leading) {
+                        Text("When?")
+                            .font(.title3)
+                            .foregroundColor(.gray)
+                        DatePicker("Start Time", selection: $taskTimeRange, displayedComponents: [.hourAndMinute, .date])
+                            .labelsHidden()
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(10)
+                            .shadow(radius: 5)
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text("Duration")
+                            .font(.title3)
+                            .foregroundColor(.gray)
+                        Picker("Select Duration", selection: $taskDuration) {
+                            ForEach(durations, id: \.self) { value in
+                                Text("\(value)m").tag(value)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        .shadow(radius: 5)
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text("Icon")
+                            .font(.title3)
+                            .foregroundColor(.gray)
+
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 15) {
+                                ForEach(availableIcons, id: \.self) { icon in
+                                    Image(systemName: icon)
+                                        .font(.system(size: 24))
+                                        .foregroundColor(taskIcon == icon ? .white : .primary)
+                                        .padding()
+                                        .background(taskIcon == icon ? selectedColor : Color.gray.opacity(0.2))
+                                        .clipShape(Circle())
+                                        .onTapGesture {
+                                            taskIcon = icon
+                                        }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text("Color")
+                            .font(.title3)
+                            .foregroundColor(.gray)
+                        HStack {
+                            ForEach([Color.pink, .orange, .yellow, .green, .blue, .purple], id: \.self) { color in
+                                Circle()
+                                    .fill(color)
+                                    .frame(width: 40, height: 40)
+                                    .overlay(
+                                        Circle().stroke(Color.black, lineWidth: selectedColor == color ? 2 : 0)
+                                    )
+                                    .onTapGesture {
+                                        selectedColor = color
+                                    }
+                            }
+                        }
+                    }
                     .padding(.top)
 
-                // Task Name
-                TextField("e.g. Read a Book", text: $taskTitle)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 5)
-
-                // Start Time Picker
-                VStack {
-                    Text("When?")
-                        .font(.title3)
-                        .foregroundColor(.gray)
-                    DatePicker(
-                        "Start Time",
-                        selection: $taskTimeRange,
-                        displayedComponents: [.hourAndMinute, .date]
-                    )
-                    .labelsHidden()
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 5)
-                }
-
-                // Duration Picker
-                VStack {
-                    Text("Duration")
-                        .font(.title3)
-                        .foregroundColor(.gray)
-                    Picker("Select Duration", selection: $taskDuration) {
-                        ForEach(durations, id: \.self) { value in
-                            Text("\(value)m").tag(value)
-                        }
+                    Button(action: {
+                        viewModel.addTask(
+                            timeRange: formatTime(taskTimeRange),
+                            title: taskTitle,
+                            duration: "\(taskDuration) min",
+                            iconName: taskIcon,
+                            scheduledTime: taskTimeRange,
+                            colorHex: hexString(from: selectedColor)
+                        )
+                        dismiss()
+                    }) {
+                        Text("Create Task")
+                            .font(.title2)
+                            .bold()
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(selectedColor)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
                     }
-                    .pickerStyle(SegmentedPickerStyle())
                     .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 5)
-                }
-                
-                // Color Selection
-                VStack {
-                    Text("Color")
-                        .font(.title3)
-                        .foregroundColor(.gray)
-                    HStack {
-                        ForEach([Color.pink, .orange, .yellow, .green, .blue, .purple], id: \.self) { color in
-                            Circle()
-                                .fill(color)
-                                .frame(width: 30, height: 30)
-                                .overlay(
-                                    Circle().stroke(Color.black, lineWidth: selectedColor == color ? 2 : 0)
-                                )
-                                .onTapGesture {
-                                    selectedColor = color
-                                }
-                        }
-                    }
+
+                    Spacer()
                 }
                 .padding()
-
-                // Create Task Button
-                Button(action: {
-                    // Add the new task to the view model
-                    viewModel.addTask(timeRange: formatTime(taskTimeRange), title: taskTitle, duration: "\(taskDuration) min", iconName: taskIcon)
-                    dismiss()  // Close the sheet after saving
-                }) {
-                    Text("Create Task")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(selectedColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                        .font(.title2)
-                }
-                .padding()
-
-                Spacer()
             }
-            .padding()
-            .background(Color.gray.opacity(0.1)) // Background for the whole screen
-            .cornerRadius(15)
-            .shadow(radius: 10)
+            .background(Color.gray.opacity(0.1))
             .navigationTitle("New Task")
         }
     }
-    
-    // Helper to format time as HH:mm
+
     private func formatTime(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: date)
     }
+
+    private func hexString(from color: Color) -> String {
+        let uiColor = UIColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: nil)
+        return String(format: "#%02X%02X%02X", Int(red * 255), Int(green * 255), Int(blue * 255))
+    }
 }
 
-#Preview {
-    Screen2()
-}
+    // MARK: - Helpers
 
+    private func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
 
+  
 
 
 struct Screen3: View {
@@ -543,104 +898,113 @@ struct Screen3: View {
     @State private var medical = UserDefaults.standard.string(forKey: "medical") ?? ""
     @State private var caretaker = UserDefaults.standard.string(forKey: "caretaker") ?? ""
     @State private var homeAddress = UserDefaults.standard.string(forKey: "homeAddress") ?? ""
-    @State private var showCallAlert = false
-    @State private var isEditing = false // Toggle edit mode
-    
+
+    @State private var isEditing = false
+    @State private var showPasscodePrompt = false
+    @State private var enteredPasscode = ""
+
+    private let correctPasscode = "1234"  // You can change this
+
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 25) {
-                    // Name Field
-                    Group {
-                        Text("Name")
-                            .font(.headline)
-                        TextField("Enter your name", text: $name)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .font(.title3)
-                            .disabled(!isEditing)  // Disable editing when not in edit mode
-                    }
                     
-                    // Medical Info Field
-                    Group {
-                        Text("Medical Info")
-                            .font(.headline)
-                        TextField("Enter your medical records", text: $medical)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .font(.title3)
-                            .disabled(!isEditing)
-                    }
-                    
-                    // Home Address Field (replacing Medication Taken)
-                    Group {
-                        Text("Home Address")
-                            .font(.headline)
-                        TextField("Enter your home address", text: $homeAddress)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .font(.title3)
-                            .disabled(!isEditing)
-                    }
-                    
-                    // Caretaker Phone Field
-                    Group {
-                        Text("Caretaker Phone")
-                            .font(.headline)
-                        TextField("Caretaker phone number", text: $caretaker)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .font(.title3)
-                            .keyboardType(.phonePad)
-                            .disabled(!isEditing)
-                    }
-                    
+                  
+                    Text("⚠️ I may be lost. Please help me get home.")
+                        .font(.title)
+                        .fontWeight(.black)
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(15)
+
+                    // INFO FIELDS
+                    InfoField(title: "Name", text: $name, editable: isEditing)
+                    InfoField(title: "Home Address", text: $homeAddress, editable: isEditing)
+                    InfoField(title: "Caretaker Emergency Phone", text: $caretaker, editable: isEditing)
+                    InfoField(title: "Medical Info", text: $medical, editable: isEditing)
+
                     // Save Button
-                    Button(action: {
-                        saveData()  // Save data when the user presses Save
-                    }) {
-                        Text("Save Info")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                            .font(.headline)
+                    if isEditing {
+                        Button("Save Info") {
+                            saveData()
+                            isEditing = false
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                     }
-                    .padding(.top, 30)
-                    .disabled(!isEditing) // Disable save button when not in edit mode
-                    
-                    // Edit Button (Toggle between Edit and View modes)
+
+                    // Edit Button with Passcode
                     Button(action: {
-                        isEditing.toggle()
+                        showPasscodePrompt = true
                     }) {
-                        Text(isEditing ? "Done" : "Edit Info")
-                            .font(.headline)
+                        Text("Edit Info")
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(isEditing ? Color.green : Color.orange)
+                            .background(Color.orange)
                             .foregroundColor(.white)
                             .cornerRadius(10)
                     }
+
+                    Spacer()
                 }
                 .padding()
             }
-            .navigationTitle("Medical ID Info")
+            .navigationTitle("Lost Info")
+            .alert("Enter Passcode", isPresented: $showPasscodePrompt) {
+                SecureField("Passcode", text: $enteredPasscode)
+                Button("OK") {
+                    if enteredPasscode == correctPasscode {
+                        isEditing = true
+                    }
+                    enteredPasscode = ""
+                }
+                Button("Cancel", role: .cancel) {
+                    enteredPasscode = ""
+                }
+            }
         }
     }
 
-    // Save function to store data into UserDefaults
     func saveData() {
         UserDefaults.standard.set(name, forKey: "name")
         UserDefaults.standard.set(medical, forKey: "medical")
         UserDefaults.standard.set(phone, forKey: "phone")
         UserDefaults.standard.set(caretaker, forKey: "caretaker")
-        UserDefaults.standard.set(homeAddress, forKey: "homeAddress")  // Save the home address
+        UserDefaults.standard.set(homeAddress, forKey: "homeAddress")
     }
-    
-    // Function to make phone calls (not used in this code but can be implemented if needed)
-    func makePhoneCall(phoneNumber: String) {
-        guard let url = URL(string: "tel://\(phoneNumber)"),
-              UIApplication.shared.canOpenURL(url) else {
-            return
+}
+
+// MARK: - Info Display Field
+struct InfoField: View {
+    let title: String
+    @Binding var text: String
+    let editable: Bool
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.gray)
+
+            if editable {
+                TextField("Enter \(title)", text: $text)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+            } else {
+                Text(text.isEmpty ? "Not set" : text)
+                    .font(.headline)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+            }
         }
-        UIApplication.shared.open(url)
     }
 }
 
@@ -730,7 +1094,7 @@ class LostItemStore: ObservableObject {
     }
 }
 
-// MARK: - ImagePicker for Taking Photos
+
 
 struct ImagePicker: UIViewControllerRepresentable {
     class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
@@ -762,7 +1126,7 @@ struct ImagePicker: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
-        picker.sourceType = .camera // Use camera for capturing photos
+        picker.sourceType = .photoLibrary  // ✅ Let user choose a photo instead of using the camera
         return picker
     }
 
