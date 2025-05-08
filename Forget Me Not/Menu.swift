@@ -12,7 +12,9 @@ struct MenuView: View {
         ("Task", "task", { vm in AnyView(Screen2().environmentObject(vm)) }),
         ("About Me", "user", { _ in AnyView(Screen1()) }),
         ("lost", "information", { _ in AnyView(Screen3()) }),
-        ("Item", "lostitems", { _ in AnyView(Screen4()) })
+        ("Item", "lostitems", { _ in AnyView(Screen4()) }),
+        ("Unsafe Items", "dangerousitems", { _ in AnyView(Screen5()) })
+
     ]
 
     var body: some View {
@@ -36,7 +38,8 @@ struct MenuView: View {
                                         .clipped()
 
                                     Text(button.label)
-                                        .font(.headline)
+                                        .font(.title2)
+                                        .bold()
                                         .foregroundColor(.primary)
                                 }
                                 .frame(maxWidth: .infinity, minHeight: 150)
@@ -50,7 +53,7 @@ struct MenuView: View {
                     // Upcoming Events Preview
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Upcoming Events")
-                            .font(.title2)
+                            .font(.largeTitle)
                             .bold()
                             .padding(.leading)
 
@@ -64,18 +67,22 @@ struct MenuView: View {
                                     Image(systemName: task.iconName)
                                         .resizable()
                                         .scaledToFit()
-                                        .frame(width: 40, height: 40)
+                                        .frame(width: 50, height: 50) // slightly increased icon size
                                         .padding()
                                         .background(colorFromHex(task.colorHex))
                                         .clipShape(Circle())
                                         .shadow(radius: 2)
 
-                                    VStack(alignment: .leading, spacing: 4) {
+                                    VStack(alignment: .leading, spacing: 6) {
                                         Text(task.title)
-                                            .font(.headline)
+                                            .font(.title) // ⬅️ made this MUCH larger
+                                            .bold()
+
                                         Text(task.timeRange)
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
+                                            .font(.title2) // Bigger font
+                                            .bold()        // Emphasize
+                                            .foregroundColor(.primary) // Dark text for visibility
+
                                     }
 
                                     Spacer()
@@ -85,6 +92,7 @@ struct MenuView: View {
                                 .cornerRadius(20)
                                 .padding(.horizontal, 10)
                             }
+
                         }
                     }
                     .padding(.bottom)
@@ -218,15 +226,16 @@ struct Screen1: View {
 
                         VStack(alignment: .leading, spacing: 8) {
                             Text(category)
-                                .font(.headline)
+                                .font(.title2)
+                                .bold()
                                 .padding(.horizontal)
 
                             // Inside each category section
                             FlowLayoutView(items: groupedFacts[category] ?? []) { fact in
                                 Text(fact.value)
-                                    .font(.headline) // makes the text bigger
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
+                                    .font(.title3) // Upgrade from .headline or .body
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 15)
                                     .background(colorFromHex(fact.colorHex).opacity(0.3))
                                     .cornerRadius(10)
                                     .onTapGesture {
@@ -248,28 +257,29 @@ struct Screen1: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
 
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 16) {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 24) {
                         ForEach(familyStore.members) { member in
-                            VStack {
+                            VStack(spacing: 8) {
                                 if let data = member.photoData, let uiImage = UIImage(data: data) {
                                     Image(uiImage: uiImage)
                                         .resizable()
                                         .scaledToFill()
-                                        .frame(width: 100, height: 100)
+                                        .frame(width: 140, height: 140)
                                         .clipShape(Circle())
                                 } else {
                                     Circle()
                                         .fill(Color.gray.opacity(0.3))
-                                        .frame(width: 100, height: 100)
-                                        .overlay(Image(systemName: "person.fill").font(.title))
+                                        .frame(width: 140, height: 140)
+                                        .overlay(Image(systemName: "person.fill").font(.largeTitle))
                                 }
                                 Text(member.name)
-                                    .font(.headline)
-                                    .lineLimit(1)
+                                    .font(.title3.bold())
                             }
                         }
                     }
                     .padding(.horizontal)
+
+  
 
                     HStack {
                         Button(action: {
@@ -278,12 +288,14 @@ struct Screen1: View {
                             HStack {
                                 Image(systemName: "plus")
                                 Text("Add Info")
+                                    .font(.title3.bold()) // larger text
                             }
                             .padding()
                             .frame(maxWidth: .infinity)
+                            .frame(height: 60) // make button taller
                             .background(Color.blue)
                             .foregroundColor(.white)
-                            .cornerRadius(12)
+                            .cornerRadius(14)
                         }
 
                         Button(action: {
@@ -292,12 +304,15 @@ struct Screen1: View {
                             HStack {
                                 Image(systemName: "plus")
                                 Text("Add Family")
+                                    .font(.title3.bold())
+                                
                             }
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.purple)
+                            .frame(height: 60) // make button taller
+                            .background(Color.red)
                             .foregroundColor(.white)
-                            .cornerRadius(12)
+                            .cornerRadius(14)
                         }
                     }
                     .padding(.horizontal)
@@ -700,15 +715,20 @@ struct TaskRow: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(task.timeRange)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.primary)
 
                 Text(task.title)
-                    .font(.headline)
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.primary)
                     .strikethrough(task.isCompleted)
 
                 Text(task.duration)
-                    .font(.caption)
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.primary)
                     .foregroundColor(.secondary)
             }
 
@@ -1314,4 +1334,88 @@ struct AddRecordingView: View {
 
 #Preview {
     Screen4()
+}
+
+
+struct Screen5: View {
+    struct UnsafeItem: Identifiable {
+        let id = UUID()
+        let name: String
+        let category: String
+        let color: Color
+        let image: UIImage?
+    }
+
+    // Replace with your actual images or load them from asset names
+    let items: [UnsafeItem] = [
+        // 🔥 Hot
+        UnsafeItem(name: "Stove Top", category: "Hot", color: .red, image: UIImage(named: "stovetop")),
+        UnsafeItem(name: "Iron", category: "Hot", color: .red, image: UIImage(named: "iron")),
+
+        // 🔪 Sharp
+        UnsafeItem(name: "Knife", category: "Sharp", color: .orange, image: UIImage(named: "knife")),
+        UnsafeItem(name: "Scissors", category: "Sharp", color: .orange, image: UIImage(named: "scissors")),
+
+        // 🧪 Chemical
+        UnsafeItem(name: "Laundry Pods", category: "Chemical", color: .purple, image: UIImage(named: "laundrypods")),
+        UnsafeItem(name: "Cleaner Spray", category: "Chemical", color: .purple, image: UIImage(named: "cleaner")),
+        UnsafeItem(name: "Gasoline", category: "Chemical", color: .purple, image: UIImage(named: "gasoline"))
+    ]
+
+    var groupedItems: [String: [UnsafeItem]] {
+        Dictionary(grouping: items, by: { $0.category })
+    }
+
+    let columns = [GridItem(.flexible()), GridItem(.flexible())]
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 30) {
+                Text("Unsafe Items")
+                    .font(.largeTitle)
+                    .bold()
+                    .padding(.horizontal)
+
+                ForEach(groupedItems.keys.sorted(), id: \.self) { category in
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(category)
+                            .font(.title)
+                            .bold()
+                            .padding(.horizontal)
+
+                        LazyVGrid(columns: columns, spacing: 20) {
+                            ForEach(groupedItems[category]!) { item in
+                                VStack(spacing: 10) {
+                                    if let image = item.image {
+                                        Image(uiImage: image)
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(height: 120)
+                                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                                            .shadow(radius: 4)
+                                    } else {
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(Color.gray.opacity(0.3))
+                                            .frame(height: 120)
+                                            .overlay(Text("No Image").foregroundColor(.gray))
+                                    }
+
+                                    Text(item.name)
+                                        .font(.title3)
+                                        .bold()
+                                        .foregroundColor(.primary)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(item.color.opacity(0.1))
+                                .cornerRadius(20)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+            }
+            .padding(.vertical)
+        }
+    }
 }
