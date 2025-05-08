@@ -1009,7 +1009,6 @@ struct InfoField: View {
 }
 
 
-
 // MARK: - LostItem and AudioRecorder
 
 struct LostItem: Identifiable, Equatable, Codable {
@@ -1063,12 +1062,11 @@ class LostItemStore: ObservableObject {
     @Published var items: [LostItem] = []
 
     private let fileName = "lostItems.json"
-    
+
     init() {
         loadItems()
     }
-    
-    // Save LostItems to a JSON file
+
     func saveItems() {
         let encoder = JSONEncoder()
         if let data = try? encoder.encode(items) {
@@ -1076,8 +1074,7 @@ class LostItemStore: ObservableObject {
             try? data.write(to: url)
         }
     }
-    
-    // Load LostItems from a JSON file
+
     func loadItems() {
         let url = getDocumentsDirectory().appendingPathComponent(fileName)
         if let data = try? Data(contentsOf: url) {
@@ -1087,13 +1084,18 @@ class LostItemStore: ObservableObject {
             }
         }
     }
-    
-    // Get the documents directory URL
+
+    func deleteItem(_ item: LostItem) {
+        if let index = items.firstIndex(of: item) {
+            items.remove(at: index)
+            saveItems()
+        }
+    }
+
     private func getDocumentsDirectory() -> URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
 }
-
 
 
 struct ImagePicker: UIViewControllerRepresentable {
@@ -1126,7 +1128,7 @@ struct ImagePicker: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
-        picker.sourceType = .photoLibrary  // ✅ Let user choose a photo instead of using the camera
+        picker.sourceType = .photoLibrary
         return picker
     }
 
@@ -1152,12 +1154,19 @@ struct Screen4: View {
                                 playAudio(named: item.audioFileName)
                             }) {
                                 ZStack(alignment: .bottomTrailing) {
-                                    Image(item.imageName)
-                                        .resizable()
-                                        .aspectRatio(1, contentMode: .fit)
-                                        .frame(maxWidth: .infinity)
-                                        .background(Color.gray.opacity(0.2))
-                                        .cornerRadius(15)
+                                    if let data = item.photoData, let uiImage = UIImage(data: data) {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .aspectRatio(1, contentMode: .fit)
+                                            .frame(maxWidth: .infinity)
+                                            .background(Color.gray.opacity(0.2))
+                                            .cornerRadius(15)
+                                    } else {
+                                        Rectangle()
+                                            .fill(Color.gray.opacity(0.2))
+                                            .aspectRatio(1, contentMode: .fit)
+                                            .cornerRadius(15)
+                                    }
 
                                     Image(systemName: "play.circle.fill")
                                         .resizable()
@@ -1169,6 +1178,13 @@ struct Screen4: View {
                             Text(item.name)
                                 .font(.headline)
                                 .padding(.top, 5)
+
+                            Button(role: .destructive) {
+                                lostItemStore.deleteItem(item)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                                    .font(.caption)
+                            }
                         }
                     }
                 }
@@ -1188,8 +1204,8 @@ struct Screen4: View {
                     .padding()
             }
             .sheet(isPresented: $showRecordingSheet) {
-                AddRecordingView { name, audioFile in
-                    saveOrUpdateItem(name: name, audioFileName: audioFile)
+                AddRecordingView { name, audioFile, photoData in
+                    saveOrUpdateItem(name: name, audioFileName: audioFile, photoData: photoData)
                 }
             }
             .navigationTitle("Lost Items")
@@ -1212,14 +1228,15 @@ struct Screen4: View {
         }
     }
 
-    func saveOrUpdateItem(name: String, audioFileName: String) {
+    func saveOrUpdateItem(name: String, audioFileName: String, photoData: Data?) {
         if let index = lostItemStore.items.firstIndex(where: { $0.name == name }) {
             lostItemStore.items[index].audioFileName = audioFileName
+            lostItemStore.items[index].photoData = photoData
         } else {
-            let newItem = LostItem(id: UUID(), name: name, imageName: "placeholder", audioFileName: audioFileName)
+            let newItem = LostItem(id: UUID(), name: name, imageName: "", audioFileName: audioFileName, photoData: photoData)
             lostItemStore.items.append(newItem)
         }
-        lostItemStore.saveItems() // Save the updated list
+        lostItemStore.saveItems()
     }
 }
 
@@ -1231,7 +1248,7 @@ struct AddRecordingView: View {
     @State private var fileName = ""
     @State private var showImagePicker = false
     @State private var selectedImage: UIImage?
-    var onSave: (String, String) -> Void
+    var onSave: (String, String, Data?) -> Void
 
     var body: some View {
         VStack(spacing: 20) {
@@ -1282,7 +1299,7 @@ struct AddRecordingView: View {
                 if recorder.isRecording {
                     recorder.stopRecording()
                 }
-                onSave(fileName, fileName + ".m4a")
+                onSave(fileName, fileName + ".m4a", selectedImage?.jpegData(compressionQuality: 0.8))
                 dismiss()
             }
             .font(.headline)
