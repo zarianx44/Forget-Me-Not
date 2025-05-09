@@ -33,7 +33,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func setGeofence(center: CLLocationCoordinate2D) {
-        let region = CLCircularRegion(center: center, radius: 100, identifier: "MyGeofence")
+        let region = CLCircularRegion(center: center, radius: 20, identifier: "MyGeofence")
         region.notifyOnEntry = true
         region.notifyOnExit = true
         locationManager.startMonitoring(for: region)
