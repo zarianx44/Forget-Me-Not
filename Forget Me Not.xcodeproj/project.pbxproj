@@ -34,6 +34,23 @@
 		033959E72DC3DF68000AC166 /* Forget Me NotUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Forget Me NotUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		03EA442D2DC9292E0087A9EE /* Exceptions for "Forget Me NotTests" folder in "Forget Me Not" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ListView.swift,
+			);
+			target = 033959CF2DC3DF67000AC166 /* Forget Me Not */;
+		};
+		03EA442E2DC9292E0087A9EE /* Exceptions for "Forget Me NotTests" folder in "Forget Me NotTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ListView.swift,
+			);
+			target = 033959DC2DC3DF68000AC166 /* Forget Me NotTests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		033959D22DC3DF67000AC166 /* Forget Me Not */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -42,6 +59,10 @@
 		};
 		033959E02DC3DF68000AC166 /* Forget Me NotTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				03EA442D2DC9292E0087A9EE /* Exceptions for "Forget Me NotTests" folder in "Forget Me Not" target */,
+				03EA442E2DC9292E0087A9EE /* Exceptions for "Forget Me NotTests" folder in "Forget Me NotTests" target */,
+			);
 			path = "Forget Me NotTests";
 			sourceTree = "<group>";
 		};
@@ -409,10 +430,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = JCU86JR832;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Forget-Me-Not-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = RememberMe;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.medical";
 				INFOPLIST_KEY_NSCameraUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -439,10 +462,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = JCU86JR832;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Forget-Me-Not-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = RememberMe;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.medical";
 				INFOPLIST_KEY_NSCameraUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
