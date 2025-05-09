@@ -11,7 +11,7 @@ struct MenuView: View {
     let buttons: [(label: String, imageName: String, destination: (ReminderViewModel) -> AnyView)] = [
         ("Task", "task", { vm in AnyView(Screen2().environmentObject(vm)) }),
         ("About Me", "user", { _ in AnyView(Screen1()) }),
-        ("lost", "information", { _ in AnyView(Screen3()) }),
+        ("Lost", "information", { _ in AnyView(Screen3()) }),
         ("Item", "lostitems", { _ in AnyView(Screen4()) }),
         ("Unsafe Items", "dangerousitems", { _ in AnyView(Screen5()) })
 
@@ -773,10 +773,8 @@ struct NewTaskView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    Text("New Task")
-                        .font(.largeTitle)
-                        .bold()
-                        .padding(.top)
+                    
+                        
 
                     TextField("e.g. Read a Book", text: $taskTitle)
                         .font(.title3)
