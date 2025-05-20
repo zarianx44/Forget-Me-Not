@@ -15,7 +15,7 @@ struct MenuView: View {
         ("Item", "lostitems", { _ in AnyView(Screen4()) }),
         ("Unsafe Items", "dangerousitems", { _ in AnyView(Screen5()) })
 
-    ]
+    ]// hold and array of button data rray of button data
 
     var body: some View {
         NavigationStack {
@@ -112,7 +112,7 @@ struct MenuButton: View {
     let imageName: String
 
     var body: some View {
-        HStack {
+        HStack { /// arranges in side by side view
             Image(systemName: imageName)
                 .resizable()
                 .scaledToFit()
@@ -275,8 +275,9 @@ struct Screen1: View {
                                 Text(member.name)
                                     .font(.title3.bold())
                             }
-                        }
+                        }// images stored in user data and loops through for each checkking
                     }
+                    // turns binary data into actual image uiimage if no data then place hodler shwos up
                     .padding(.horizontal)
 
   
@@ -322,7 +323,7 @@ struct Screen1: View {
             .navigationTitle("About Me")
         }
         .sheet(isPresented: $showAddSheet) {
-            AddInfoView(store: store)
+            AddInfoView(store: store)// opens a form ontop of the screen
         }
         .sheet(isPresented: $showAddFamily) {
             AddFamilyMemberView(store: familyStore)
