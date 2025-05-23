@@ -4,5 +4,12 @@
 <dict>
 	<key></key>
 	<string></string>
+	<key>MKDirectionsApplicationSupportedModes</key>
+	<array/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>
