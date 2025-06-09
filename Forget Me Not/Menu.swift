@@ -15,7 +15,9 @@ struct MenuView: View {
         ("About Me", "user", { _ in AnyView(Screen1()) }),
         ("Lost", "information", { _ in AnyView(Screen3()) }),
         ("Item", "lostitems", { _ in AnyView(Screen4()) }),
-        ("Unsafe Items", "dangerousitems", { _ in AnyView(Screen5()) })
+        ("Unsafe Items", "dangerousitems", { _ in AnyView(Screen5()) }),
+        ("Identify Object", "camera", { _ in AnyView(Screen6()) })
+
 
     ]// hold and array of button data rray of button data
 
