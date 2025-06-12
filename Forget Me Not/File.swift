@@ -235,6 +235,34 @@ extension View {
     }
 }
 
+import CoreLocation
+import FirebaseDatabase
+
+class LocationSharingManager: NSObject, CLLocationManagerDelegate, ObservableObject {
+    private var locationManager = CLLocationManager()
+    private var dbRef = Database.database().reference()
+    private let userID = "user123" // Unique ID per device
+
+    override init() {
+        super.init()
+        locationManager.delegate = self
+        locationManager.requestAlwaysAuthorization()
+        locationManager.startUpdatingLocation()
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let latest = locations.last else { return }
+
+        // Push to Firebase
+        let locationData = [
+            "lat": latest.coordinate.latitude,
+            "lon": latest.coordinate.longitude
+        ]
+        dbRef.child("locations").child(userID).setValue(locationData)
+    }
+}
+
+
 #Preview {
     LoginView()
 }
