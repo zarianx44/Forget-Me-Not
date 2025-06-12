@@ -77,7 +77,6 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "OPENAI_API_KEY"
-            value = "***REMOVED***"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
