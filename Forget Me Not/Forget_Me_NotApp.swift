@@ -26,11 +26,7 @@ struct Forget_Me_NotApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if isLoggedIn {
-                ContentView() // or your main user view
-            } else {
-                LoginView()   // or onboarding/sign-in view
-            }
+            AppRootView()
         }
     }
 }
