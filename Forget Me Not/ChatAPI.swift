@@ -22,9 +22,8 @@ class ChatAPI {
     static let shared = ChatAPI()
 
    
-    
-//    private let apiKey = ProcessInfo.processInfo.environment["OPENAI_API_KEY"]
-    private let apiKey = "***REMOVED***"
+    private let apiKey = ProcessInfo.processInfo.environment["OPENAI_API_KEY"]
+
 
     init() {
         print("🔐 API KEY: \(apiKey ?? "nil")")
