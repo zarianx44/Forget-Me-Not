@@ -5,14 +5,12 @@ import UIKit
 
 struct MenuView: View {
     @StateObject private var reminderVM = ReminderViewModel()
-    
-    @StateObject private var clientLocationManager = ClientLocationManager()
 
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
 
     let buttons: [(label: String, imageName: String, destination: (ReminderViewModel) -> AnyView)] = [
         ("Task", "task", { vm in AnyView(Screen2().environmentObject(vm)) }),
-        ("About Me", "user", { _ in AnyView(Screen1()) }),
+        (" ", "aboutme", { _ in AnyView(Screen1()) }),
         ("Lost", "information", { _ in AnyView(Screen3()) }),
         ("Item", "lostitems", { _ in AnyView(Screen4()) }),
         ("Unsafe Items", "dangerousitems", { _ in AnyView(Screen5()) })
@@ -95,18 +93,7 @@ struct MenuView: View {
                                 .padding(.horizontal, 10)
                             }
 
-                            Text("Client Location Monitoring")
-                                            .font(.title)
-                                            .padding()
-
-                                        if let region = clientLocationManager.region {
-                                            Text("Monitoring region at:\nLat: \(region.center.latitude)\nLon: \(region.center.longitude)")
-                                                .multilineTextAlignment(.center)
-                                                .padding()
-                                        } else {
-                                            ProgressView("Waiting for geofence...")
-                                                .padding()
-                                        }
+                            
                         }
                     }
                     .padding(.bottom)

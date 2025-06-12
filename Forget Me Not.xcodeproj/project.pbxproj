@@ -9,6 +9,13 @@
 /* Begin PBXBuildFile section */
 		03395A162DC3F24C000AC166 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 03395A152DC3F24C000AC166 /* FirebaseAuth */; };
 		03395A182DC3F24C000AC166 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 03395A172DC3F24C000AC166 /* FirebaseFirestore */; };
+		03D08C212DFB510B00EF3242 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 03D08C202DFB510B00EF3242 /* FirebaseAnalytics */; };
+		03D08C232DFB510B00EF3242 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */ = {isa = PBXBuildFile; productRef = 03D08C222DFB510B00EF3242 /* FirebaseAnalyticsOnDeviceConversion */; };
+		03D08C252DFB510B00EF3242 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 03D08C242DFB510B00EF3242 /* FirebaseAnalyticsWithoutAdIdSupport */; };
+		03D08C272DFB510B00EF3242 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 03D08C262DFB510B00EF3242 /* FirebaseAppCheck */; };
+		03D08C292DFB510B00EF3242 /* FirebaseAppDistribution-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = 03D08C282DFB510B00EF3242 /* FirebaseAppDistribution-Beta */; };
+		03D08C2B2DFB522800EF3242 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 03D08C2A2DFB522800EF3242 /* FirebaseCore */; };
+		03D08C2D2DFB522800EF3242 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 03D08C2C2DFB522800EF3242 /* FirebaseDatabase */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,8 +85,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				03D08C292DFB510B00EF3242 /* FirebaseAppDistribution-Beta in Frameworks */,
 				03395A162DC3F24C000AC166 /* FirebaseAuth in Frameworks */,
+				03D08C252DFB510B00EF3242 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
 				03395A182DC3F24C000AC166 /* FirebaseFirestore in Frameworks */,
+				03D08C212DFB510B00EF3242 /* FirebaseAnalytics in Frameworks */,
+				03D08C272DFB510B00EF3242 /* FirebaseAppCheck in Frameworks */,
+				03D08C2D2DFB522800EF3242 /* FirebaseDatabase in Frameworks */,
+				03D08C2B2DFB522800EF3242 /* FirebaseCore in Frameworks */,
+				03D08C232DFB510B00EF3242 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -142,6 +156,13 @@
 			packageProductDependencies = (
 				03395A152DC3F24C000AC166 /* FirebaseAuth */,
 				03395A172DC3F24C000AC166 /* FirebaseFirestore */,
+				03D08C202DFB510B00EF3242 /* FirebaseAnalytics */,
+				03D08C222DFB510B00EF3242 /* FirebaseAnalyticsOnDeviceConversion */,
+				03D08C242DFB510B00EF3242 /* FirebaseAnalyticsWithoutAdIdSupport */,
+				03D08C262DFB510B00EF3242 /* FirebaseAppCheck */,
+				03D08C282DFB510B00EF3242 /* FirebaseAppDistribution-Beta */,
+				03D08C2A2DFB522800EF3242 /* FirebaseCore */,
+				03D08C2C2DFB522800EF3242 /* FirebaseDatabase */,
 			);
 			productName = "Forget Me Not";
 			productReference = 033959D02DC3DF67000AC166 /* Forget Me Not.app */;
@@ -440,9 +461,11 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "We use your camera to aide in finding your lost items.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We use your location to monitor geofences";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to show it on the map";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need microphone access to record audio for this feature.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -476,9 +499,11 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "We use your camera to aide in finding your lost items.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We use your location to monitor geofences";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to show it on the map";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need microphone access to record audio for this feature.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -628,6 +653,34 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 03395A142DC3F24C000AC166 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		03D08C202DFB510B00EF3242 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseAnalytics;
+		};
+		03D08C222DFB510B00EF3242 /* FirebaseAnalyticsOnDeviceConversion */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseAnalyticsOnDeviceConversion;
+		};
+		03D08C242DFB510B00EF3242 /* FirebaseAnalyticsWithoutAdIdSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseAnalyticsWithoutAdIdSupport;
+		};
+		03D08C262DFB510B00EF3242 /* FirebaseAppCheck */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseAppCheck;
+		};
+		03D08C282DFB510B00EF3242 /* FirebaseAppDistribution-Beta */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "FirebaseAppDistribution-Beta";
+		};
+		03D08C2A2DFB522800EF3242 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseCore;
+		};
+		03D08C2C2DFB522800EF3242 /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseDatabase;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
