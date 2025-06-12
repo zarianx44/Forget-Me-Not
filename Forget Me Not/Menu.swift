@@ -12,11 +12,12 @@ struct MenuView: View {
 
     let buttons: [(label: String, imageName: String, destination: (ReminderViewModel) -> AnyView)] = [
         ("Task", "task", { vm in AnyView(Screen2().environmentObject(vm)) }),
-        ("About Me", "user", { _ in AnyView(Screen1()) }),
-        ("Lost", "information", { _ in AnyView(Screen3()) }),
-        ("Item", "lostitems", { _ in AnyView(Screen4()) }),
-        ("Unsafe Items", "dangerousitems", { _ in AnyView(Screen5()) }),
-        ("Identify Object", "camera", { _ in AnyView(Screen6()) })
+        ("AboutMe", "aboutme", { _ in AnyView(Screen1()) }),
+        ("lost", "lost", { _ in AnyView(Screen3()) }),
+        ("item", "item", { _ in AnyView(Screen4()) }),
+        ("hazard", "hazard", { _ in AnyView(Screen5()) }),
+        ("Object Identifier", "objectfinder", { _ in AnyView(TapTapGoView()) })
+
 
 
     ]// hold and array of button data rray of button data
@@ -24,35 +25,29 @@ struct MenuView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 50) {
                     Text("Menu")
                         .font(.largeTitle)
                         .bold()
                         .padding(.top)
 
-                    // Menu Buttons
-                    LazyVGrid(columns: columns, spacing: 20) {
+                    LazyVGrid(columns: columns, spacing: 80) { // <- Increase vertical spacing
                         ForEach(buttons, id: \.label) { button in
                             NavigationLink(destination: button.destination(reminderVM)) {
-                                VStack(spacing: 10) {
-                                    Image(button.imageName)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: 100, height: 100)
-                                        .clipped()
-
-                                    Text(button.label)
-                                        .font(.title2)
-                                        .bold()
-                                        .foregroundColor(.primary)
-                                }
-                                .frame(maxWidth: .infinity, minHeight: 150)
-                                .background(Color.blue.opacity(0.15))
-                                .cornerRadius(20)
+                                Image(button.imageName)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .cornerRadius(20)
+                                    .frame(width: 285, height: 280)
+                                    .shadow(radius: 5)
+                                    .padding(30) // Optional: add spacing *within* the image frame
                             }
+                            .frame(height: 210) // Consistent button height
+                            .padding(.horizontal, 4) // Slight spacing between columns
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 30) // Outer padding
+
 
                     // Upcoming Events Preview
                     VStack(alignment: .leading, spacing: 12) {
