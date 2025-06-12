@@ -5,7 +5,6 @@ struct CareView: View {
     @State private var showChat = false  // Track chat view
     
     var body: some View {
-        NavigationLink("Open Tracker", destination: TrackerView())
         
     }
 }
