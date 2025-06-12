@@ -1,48 +1,76 @@
-//
-//  ChatView.swift
-//  Forget Me Not
-//
-//  Created by Zara on 2025-06-10.
-//
-
-import Foundation
 import SwiftUI
 
 struct ChatView: View {
     @State private var inputText = ""
-    @State private var messages: [String] = []
+    @State private var messages: [(String, Bool)] = [] // (text, isUser)
+
+    init() {
+        print("💬 ChatView loaded")
+    }
 
     var body: some View {
         VStack {
-            ScrollView {
-                ForEach(messages.indices, id: \.self) { index in
-                    Text(messages[index])
-                        .frame(maxWidth: .infinity, alignment: index % 2 == 0 ? .trailing : .leading)
-                        .padding()
-                        .background(index % 2 == 0 ? Color.blue.opacity(0.2) : Color.gray.opacity(0.2))
-                        .cornerRadius(10)
-                        .padding(.horizontal)
+            ScrollViewReader { scrollProxy in
+                ScrollView {
+                    VStack(spacing: 10) {
+                        ForEach(messages.indices, id: \.self) { index in
+                            let message = messages[index]
+                            HStack {
+                                if message.1 {
+                                    Spacer()
+                                }
+                                Text(message.0)
+                                    .padding()
+                                    .background(message.1 ? Color.blue.opacity(0.2) : Color.gray.opacity(0.2))
+                                    .cornerRadius(12)
+                                    .frame(maxWidth: 250, alignment: message.1 ? .trailing : .leading)
+                                if !message.1 {
+                                    Spacer()
+                                }
+                            }
+                            .id(index)
+                        }
+                    }
+                    .padding()
+                }
+                .onChange(of: messages.count) { _ in
+                    scrollProxy.scrollTo(messages.count - 1)
                 }
             }
 
             HStack {
                 TextField("Type your message...", text: $inputText)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
+                    .padding(.leading)
 
                 Button("Send") {
-                    let userText = inputText
-                    messages.append(userText)
+                    let userText = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !userText.isEmpty else { return }
+
+                    messages.append((userText, true))
                     inputText = ""
 
-                    ChatAPI.shared.sendMessage(userText) { response in
-                        if let reply = response {
-                            messages.append(reply)
+                    print("📤 Sending message: \(userText)")
+
+                    ChatAPI.shared.sendMessage(userText) { reply in
+                        if let reply = reply {
+                            DispatchQueue.main.async {
+                                messages.append((reply, false))
+                            }
+                        } else {
+                            DispatchQueue.main.async {
+                                messages.append(("Sorry, something went wrong.", false))
+                            }
                         }
                     }
                 }
-                .padding()
+                
+            
+
+                .padding(.horizontal)
             }
+            .padding(.vertical)
         }
+        .navigationTitle("Caregiver Chat")
     }
 }
