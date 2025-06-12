@@ -10,19 +10,17 @@ struct MenuView: View {
 
     let buttons: [(label: String, imageName: String, destination: (ReminderViewModel) -> AnyView)] = [
         ("Task", "task", { vm in AnyView(Screen2().environmentObject(vm)) }),
-<<<<<<< HEAD
         ("AboutMe", "aboutme", { _ in AnyView(Screen1()) }),
         ("lost", "lost", { _ in AnyView(Screen3()) }),
         ("item", "item", { _ in AnyView(Screen4()) }),
         ("hazard", "hazard", { _ in AnyView(Screen5()) }),
         ("Object Identifier", "objectfinder", { _ in AnyView(TapTapGoView()) })
 
-=======
         (" ", "aboutme", { _ in AnyView(Screen1()) }),
         ("Lost", "information", { _ in AnyView(Screen3()) }),
         ("Item", "lostitems", { _ in AnyView(Screen4()) }),
         ("Unsafe Items", "dangerousitems", { _ in AnyView(Screen5()) })
->>>>>>> main
+
 
 
     ]// hold and array of button data rray of button data
