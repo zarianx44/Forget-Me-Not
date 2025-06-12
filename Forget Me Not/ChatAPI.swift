@@ -26,7 +26,7 @@ class ChatAPI {
 
 
     init() {
-        print("🔐 API KEY: \(apiKey ?? "nil")")
+        print(" API KEY: \(apiKey ?? "nil")")
     }
 
     func sendMessage(_ userMessage: String, completion: @escaping (String?) -> Void) {
