@@ -1,32 +1,15 @@
-//
-//  Forget_Me_NotApp.swift
-//  Forget Me Not
-//
-//  Created by Zara on 2025-05-01.
-//
-
 import SwiftUI
-import FirebaseCore
+import Firebase
 
-// ✅ AppDelegate to configure Firebase early
-class AppDelegate: NSObject, UIApplicationDelegate {
-    func application(_ application: UIApplication,
-                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        print("✅ Configuring Firebase...")
-        FirebaseApp.configure()
-        return true
-    }
-}
-
-// ✅ Root App Entry Point
 @main
-struct Forget_Me_NotApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @AppStorage("isLoggedIn") var isLoggedIn: Bool = false
+struct ForgetMeNotApp: App {
+    init() {
+        FirebaseApp.configure()
+    }
 
     var body: some Scene {
         WindowGroup {
-            AppRootView()
+            ContentView() // or your main view
         }
     }
 }
