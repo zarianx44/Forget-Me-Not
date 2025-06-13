@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct CareView: View {
-    @State private var showMap = false
+    @State private var showChat = false  // Track chat view
+    @ObservedObject var moodStore: LastMoodStore
     
     @State private var selectedClientUID = "REPLACE_WITH_CLIENT_UID"
 
@@ -34,4 +35,14 @@ struct CareView: View {
             PatientTrackingMapView(clientUID: selectedClientUID)
         }
     }
+
+        VStack {
+            MoodBannerView(moodStore: moodStore)
+
+                    // other content...
+                }
+        }
 }
+
+
+
