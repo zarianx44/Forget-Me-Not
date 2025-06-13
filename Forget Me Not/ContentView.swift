@@ -19,16 +19,26 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                Button("Log Out") {
-                    do {
-                        try Auth.auth().signOut()
-                        isLoggedIn = false
-                    } catch {
-                        print("Error logging out: \(error.localizedDescription)")
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        do {
+                            try Auth.auth().signOut()
+                            isLoggedIn = false
+                        } catch {
+                            print("Error logging out: \(error.localizedDescription)")
+                        }
+                    }) {
+                        Label("Log Out", systemImage: "arrow.backward.circle.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.red)
+                            .padding(8)
+                            .background(Color(.systemGray6))
+                            .clipShape(Capsule())
                     }
+                    .padding([.top, .trailing])
                 }
-                .foregroundColor(.red)
-                .padding()
+
 
                 Spacer()
 
@@ -51,7 +61,7 @@ struct ContentView: View {
                         }
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color(.secondarySystemBackground))
+                        .background(Color(.clear))
                         .cornerRadius(12)
                     }
                     .simultaneousGesture(TapGesture().onEnded {
@@ -71,7 +81,7 @@ struct ContentView: View {
                         }
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color(.secondarySystemBackground))
+                        .background(Color(.clear))
                         .cornerRadius(12)
                     }
                     .simultaneousGesture(TapGesture().onEnded {

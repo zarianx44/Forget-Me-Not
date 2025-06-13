@@ -8,7 +8,6 @@ struct MenuView: View {
     @ObservedObject var moodStore: LastMoodStore  // ✅ required
     // ...
     @StateObject private var reminderVM = ReminderViewModel()
-    @StateObject private var locationManager = LocationManager()
 
 
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
@@ -97,21 +96,25 @@ struct MenuView: View {
                         .bold()
                         .padding(.top)
 
-                    LazyVGrid(columns: columns, spacing: 80) {
+                    LazyVGrid(columns: columns, spacing: UIDevice.current.userInterfaceIdiom == .pad ? 100 : 80) {
                         ForEach(buttons, id: \.label) { button in
                             NavigationLink(destination: button.destination(reminderVM)) {
                                 Image(button.imageName)
                                     .resizable()
                                     .scaledToFit()
                                     .cornerRadius(20)
-                                    .frame(width: 285, height: 280)
+                                    .frame(
+                                        width: UIDevice.current.userInterfaceIdiom == .pad ? 340 : 285,
+                                        height: UIDevice.current.userInterfaceIdiom == .pad ? 320 : 280
+                                    )
                                     .shadow(radius: 5)
-                                    .padding(30)
+                                    .padding(UIDevice.current.userInterfaceIdiom == .pad ? 40 : 30)
                             }
-                            .frame(height: 210)
+                            .frame(height: UIDevice.current.userInterfaceIdiom == .pad ? 260 : 210)
                             .padding(.horizontal, 4)
                         }
                     }
+
                     .padding(.horizontal, 30)
 
                     Spacer()

@@ -15,13 +15,14 @@ struct TapTapGoView: View {
 
     var body: some View {
         ZStack {
-            (isDangerous ? Color.red : Color.white)
+            (isDangerous ? Color.red : Color(.systemBackground))
                 .ignoresSafeArea()
                 .animation(.easeInOut, value: isDangerous)
 
             VStack(spacing: 30) {
                 Text("Object Identifier")
                     .font(.system(size: 42, weight: .heavy))
+                    .foregroundColor(Color.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
 
@@ -37,7 +38,7 @@ struct TapTapGoView: View {
                         .font(.system(size: 28, weight: .bold))
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.blue)
+                        .background(Color.accentColor)
                         .foregroundColor(.white)
                         .cornerRadius(15)
                 }
@@ -56,6 +57,7 @@ struct TapTapGoView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Detected Object")
                             .font(.system(size: 28, weight: .semibold))
+                            .foregroundColor(.primary)
 
                         Text(detectedLabel)
                             .font(.system(size: 34, weight: .bold))
@@ -63,11 +65,13 @@ struct TapTapGoView: View {
 
                         Text("Object Details")
                             .font(.system(size: 28, weight: .semibold))
+                            .foregroundColor(.primary)
 
                         ScrollView {
                             Text(objectInfo.isEmpty ? "No information available for this object." : objectInfo)
                                 .font(.system(size: 22))
                                 .multilineTextAlignment(.leading)
+                                .foregroundColor(.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding()
                         }
@@ -82,6 +86,7 @@ struct TapTapGoView: View {
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color.orange.opacity(0.3))
+                        .foregroundColor(.primary)
                         .cornerRadius(15)
                     }
                     .padding()
@@ -108,7 +113,7 @@ struct TapTapGoView: View {
     private func detect(_ image: UIImage) {
         manager.detectObject(in: image) { label, danger, info in
             DispatchQueue.main.async {
-                print("Label: \(label), Danger: \(danger), Info: \(info)") // Debug
+                print("Label: \(label), Danger: \(danger), Info: \(info)")
 
                 detectedLabel = label
                 isDangerous = danger

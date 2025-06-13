@@ -1,228 +1,184 @@
 import SwiftUI
 import Firebase
 import FirebaseAuth
-import Combine
 
 struct LoginView: View {
     @State private var showAlert = false
     @State private var errorMessage = ""
-
-    @State private var userIsLoggedIn = false
-    @State private var isCheckingAuth = true
-
+    
     @State private var isLoginMode = false
 
     @AppStorage("isLoggedIn") var isLoggedIn: Bool = false
-
     @State private var email = ""
     @State private var password = ""
 
     var body: some View {
-        if userIsLoggedIn {
-            ContentView()
-        } else {
-            content
-        }
+        loginScreen
     }
 
-    var content: some View {
+    var loginScreen: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea() // ✅ Changed from .white
+            Color(.systemBackground).ignoresSafeArea()
 
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .foregroundStyle(.linearGradient(colors: [.indigo, .teal], startPoint: .topLeading, endPoint: .bottomTrailing))
-                .frame(width: 1000, height: 400)
-                .offset(y: -350)
+            VStack(spacing: 0) {
+                // Top gradient header stays fixed
+                RoundedRectangle(cornerRadius: 30)
+                    .foregroundStyle(.linearGradient(colors: [.indigo, .teal], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(height: 300)
+                    .ignoresSafeArea(edges: .top)
 
-            ScrollView {
-                VStack(spacing: 20) {
+                Spacer()
+            }
+
+            VStack(spacing: 0) {
+                VStack(spacing: 8) {
                     Text("Welcome to")
                         .foregroundColor(.white)
-                        .font(.system(size: 45))
-                        .offset(y: 60)
+                        .font(.system(size: 36, weight: .semibold))
 
                     Text("RememberMe")
                         .foregroundColor(.white)
-                        .font(.system(size: 54, weight: .bold))
-                        .offset(y: 30)
+                        .font(.system(size: 48, weight: .bold))
+                }
+                .padding(.top, 60)
 
-                    TextField("Email", text: $email)
-                        .foregroundColor(.primary) // ✅ Changed from .black
-                        .textFieldStyle(.plain)
-                        .padding(.top, 150)
-                        .placeholder(when: email.isEmpty) {
-                            Text("Email")
-                                .padding(.top, 150)
-                                .foregroundColor(.secondary) // ✅ Changed from .black
-                                .bold()
-                                .font(.system(size: 22))
-                        }
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // Email Field
+                        TextField("Email", text: $email)
+                            .autocapitalization(.none)
+                            .keyboardType(.emailAddress)
+                            .padding()
+                            .background(Color(.secondarySystemBackground))
+                            .foregroundColor(.primary)
+                            .cornerRadius(10)
+                            .shadow(radius: 2)
 
-                    Rectangle()
-                        .frame(width: 350, height: 1)
 
-                    SecureField("Password", text: $password)
-                        .foregroundColor(.primary) // ✅ Changed from .black
-                        .textFieldStyle(.plain)
-                        .placeholder(when: password.isEmpty) {
-                            Text("Password")
-                                .foregroundColor(.secondary) // ✅ Changed from .black
-                                .bold()
-                                .font(.system(size: 22))
-                        }
+                        // Password Field
+                        SecureField("Password", text: $password)
+                            .padding()
+                            .background(Color(.secondarySystemBackground))
+                            .foregroundColor(.primary)
+                            .cornerRadius(10)
+                            .shadow(radius: 2)
 
-                    Rectangle()
-                        .frame(width: 350, height: 1)
-                        .padding(.bottom, 20)
 
-                    if isLoginMode {
-                        Button(action: {
-                            if email.isEmpty {
-                                errorMessage = "Please enter your email to reset password."
-                                showAlert = true
-                                return
-                            }
-
-                            Auth.auth().sendPasswordReset(withEmail: email) { error in
-                                if let error = error {
-                                    errorMessage = error.localizedDescription
-                                } else {
-                                    errorMessage = "Password reset email sent!"
+                        // Forgot Password
+                        if isLoginMode {
+                            Button(action: {
+                                if email.isEmpty {
+                                    errorMessage = "Please enter your email to reset password."
+                                    showAlert = true
+                                    return
                                 }
-                                showAlert = true
+                                Auth.auth().sendPasswordReset(withEmail: email) { error in
+                                    if let error = error {
+                                        errorMessage = error.localizedDescription
+                                    } else {
+                                        errorMessage = "Password reset email sent!"
+                                    }
+                                    showAlert = true
+                                }
+                            }) {
+                                Text("Forgot Password?")
+                                    .font(.system(size: 17, weight: .medium))
+                                    .foregroundColor(.blue)
+                                    .underline()
                             }
-                        }) {
-                            Text("Forgot Password?")
+                        }
+
+                        // Login / Sign Up Button
+                        Button {
+                            isLoginMode ? login() : register()
+                        } label: {
+                            Text(isLoginMode ? "Login" : "Sign Up")
+                                .bold()
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 55)
+                                .foregroundColor(.white)
+                                .font(.system(size: 22))
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(.linearGradient(colors: [.teal, .blue], startPoint: .top, endPoint: .bottomTrailing))
+                                )
+                        }
+
+                        // Toggle login/signup
+                        Button {
+                            isLoginMode.toggle()
+                        } label: {
+                            Text(isLoginMode ? "Don't have an account? Sign up here" : "Already have an account? Login here")
+                                .bold()
+                                .underline()
                                 .font(.system(size: 17, weight: .medium))
                                 .foregroundColor(.blue)
-                                .underline()
-                                .padding(.top, -10)
                         }
+                        .padding(.top, 10)
                     }
-
-                    Button {
-                        if isLoginMode {
-                            login()
-                        } else {
-                            register()
-                        }
-                    } label: {
-                        Text(isLoginMode ? "Login" : "Sign Up")
-                            .bold()
-                            .frame(width: 250, height: 60)
-                            .foregroundColor(.white)
-                            .font(.system(size: 25))
-                            .background(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(.linearGradient(colors: [.teal, .blue], startPoint: .top, endPoint: .bottomTrailing))
-                            )
-                    }
-                    .padding(.top)
-                    .offset(y: 100)
-
-                    Button {
-                        isLoginMode.toggle()
-                    } label: {
-                        Text(isLoginMode ? "Don't have an account? Sign up here" : "Already have an account? Login here")
-                            .bold()
-                            .underline()
-                            .font(.system(size: 17, weight: .medium))
-                    }
-                    .padding(.top)
-                    .offset(y: 100)
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .cornerRadius(20)
+                    .padding(.horizontal)
+                    .padding(.top, 40)
                 }
-                .frame(width: 350)
+                .onTapGesture {
+                    hideKeyboard()
+                }
+
+                Spacer()
             }
-            .alert(isPresented: $showAlert) {
-                Alert(
-                    title: Text("Error"),
-                    message: Text(errorMessage),
-                    dismissButton: .default(Text("OK"))
-                )
-            }
-            .onAppear {
-                Auth.auth().addStateDidChangeListener { auth, user in
-                    if user != nil {
-                        userIsLoggedIn = true
-                    }
+            .padding(.top, 20)
+        }
+        .alert(isPresented: $showAlert) {
+            Alert(title: Text("Notice"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+        }
+        .onAppear {
+            Auth.auth().addStateDidChangeListener { _, user in
+                if user != nil {
+                  
                 }
             }
         }
     }
 
     func register() {
+        if email.isEmpty || password.isEmpty {
+            errorMessage = "Please enter both email and password."
+            showAlert = true
+            return
+        }
+
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
             if let error = error {
                 errorMessage = error.localizedDescription
                 showAlert = true
-            } else if let user = result?.user {
-                user.sendEmailVerification { error in
-                    if let error = error {
-                        errorMessage = error.localizedDescription
-                    } else {
-                        errorMessage = "Verification email sent. Please check your inbox."
-                    }
-                    showAlert = true
-                }
-            }
-        }
-    }
-
-    func login() {
-        Auth.auth().signIn(withEmail: email, password: password) { result, error in
-            if let error = error {
-                errorMessage = error.localizedDescription
-                showAlert = true
-            } else if let user = Auth.auth().currentUser, !user.isEmailVerified {
-                errorMessage = "Email not verified. Please check your inbox."
-                showAlert = true
-                try? Auth.auth().signOut() // log them out
             } else {
                 isLoggedIn = true
             }
         }
     }
-}
 
-extension View {
-    func placeholder<Content: View>(
-        when shouldShow: Bool,
-        alignment: Alignment = .leading,
-        @ViewBuilder placeholder: () -> Content) -> some View {
-        ZStack(alignment: alignment) {
-            placeholder().opacity(shouldShow ? 1 : 0)
-            self
+
+    func login() {
+        if email.isEmpty || password.isEmpty {
+            errorMessage = "Please enter both email and password."
+            showAlert = true
+            return
+        }
+
+        Auth.auth().signIn(withEmail: email, password: password) { _, error in
+            if let error = error {
+                errorMessage = error.localizedDescription
+                showAlert = true
+            } else {
+                isLoggedIn = true
+            }
         }
     }
-}
 
-import CoreLocation
-import FirebaseDatabase
 
-class LocationSharingManager: NSObject, CLLocationManagerDelegate, ObservableObject {
-    private var locationManager = CLLocationManager()
-    private var dbRef = Database.database().reference()
-    private let userID = "user123" // Unique ID per device
-
-    override init() {
-        super.init()
-        locationManager.delegate = self
-        locationManager.requestAlwaysAuthorization()
-        locationManager.startUpdatingLocation()
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
-
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let latest = locations.last else { return }
-
-        // Push to Firebase
-        let locationData = [
-            "lat": latest.coordinate.latitude,
-            "lon": latest.coordinate.longitude
-        ]
-        dbRef.child("locations").child(userID).setValue(locationData)
-    }
-}
-
-#Preview {
-    LoginView()
 }
