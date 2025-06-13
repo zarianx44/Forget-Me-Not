@@ -4,7 +4,6 @@ import FirebaseAuth
 import Combine
 
 struct LoginView: View {
-
     @State private var showAlert = false
     @State private var errorMessage = ""
 
