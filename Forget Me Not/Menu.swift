@@ -29,6 +29,53 @@ struct MenuView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
+                // Upcoming Events Preview
+                VStack(spacing: 50) {
+                    Text("Upcoming Events")
+                        .font(.largeTitle)
+                        .bold()
+                        .padding(.top)
+
+                    if reminderVM.sortedTasks.isEmpty {
+                        Text("No upcoming tasks.")
+                            .foregroundColor(.gray)
+                            .padding(.horizontal)
+                    } else {
+                        ForEach(reminderVM.sortedTasks.prefix(3)) { task in
+                            HStack(spacing: 16) {
+                                Image(systemName: task.iconName)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 50, height: 50) // slightly increased icon size
+                                    .padding()
+                                    .background(colorFromHex(task.colorHex))
+                                    .clipShape(Circle())
+                                    .shadow(radius: 2)
+
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text(task.title)
+                                        .font(.title) // ⬅️ made this MUCH larger
+                                        .bold()
+
+                                    Text(task.timeRange)
+                                        .font(.title2) // Bigger font
+                                        .bold()        // Emphasize
+                                        .foregroundColor(.primary) // Dark text for visibility
+
+                                }
+
+                                Spacer()
+                            }
+                            .padding()
+                            .background(Color.teal.opacity(0.2))
+                            .cornerRadius(20)
+                            .padding(.horizontal, 10)
+                        }
+
+                        
+                    }
+                }
+                
                 VStack(spacing: 50) {
                     Text("Menu")
                         .font(.largeTitle)
