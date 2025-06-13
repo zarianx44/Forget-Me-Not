@@ -4,6 +4,7 @@ import SwiftUI
 struct CareView: View {
     @State private var showBreathing = false
     @ObservedObject var moodStore: LastMoodStore
+    @State private var showMap = false 
     
     @State private var selectedClientUID = "REPLACE_WITH_CLIENT_UID"
 
@@ -81,17 +82,6 @@ struct BreathingView: View {
 
     var body: some View {
         VStack(spacing: 40) {
-            HStack {
-                Spacer()
-                Button(action: {
-                    dismiss()
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 30))
-                        .foregroundColor(.gray)
-                }
-                .padding()
-            }
 
             Text(phase == .holdAfterExhale ? "Hold" : phase.rawValue)
                 .font(.largeTitle.bold())

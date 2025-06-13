@@ -3,18 +3,12 @@ import AVFoundation
 import UIKit
 import UserNotifications
 
-sstruct MenuView: View {
-    @ObservedObject var moodStore: LastMoodStore  // ✅ required
-    // ...
-}
-  @StateObject private var reminderVM = ReminderViewModel()
-
 
 struct MenuView: View {
+    @ObservedObject var moodStore: LastMoodStore  // ✅ required
+    // ...
     @StateObject private var reminderVM = ReminderViewModel()
     @StateObject private var locationManager = LocationManager()
-    
-    @StateObject private var moodStore = LastMoodStore()
 
 
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
@@ -27,9 +21,11 @@ struct MenuView: View {
             ("item", "item", { _ in AnyView(Screen4()) }),
             ("hazard", "hazard", { _ in AnyView(Screen5()) }),
             ("Object Identifier", "objectfinder", { _ in AnyView(TapTapGoView()) }),
-            ("Mood", "moodicon", { _ in AnyView(MoodLoggerView(moodStore: moodStore)) })
+            ("Mood", "moodicon", { _ in AnyView(MoodLoggerView(moodStore: self.moodStore)) }) // ✅ now safe
         ]
     }
+
+
 
     var body: some View {
         NavigationStack {
@@ -157,7 +153,7 @@ struct MenuButton: View {
 
 
 #Preview {
-    MenuView(moodStore: <#LastMoodStore#>)
+    MenuView(moodStore: LastMoodStore())
 }
 // ... all your MenuView and MenuButton code above
 struct PersonalFact: Identifiable, Codable {
