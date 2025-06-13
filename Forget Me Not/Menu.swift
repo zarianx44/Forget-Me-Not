@@ -12,22 +12,18 @@ struct MenuView: View {
 
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
 
-    let buttons: [(label: String, imageName: String, destination: (ReminderViewModel) -> AnyView)] = [
-        ("Task", "task", { vm in AnyView(Screen2().environmentObject(vm)) }),
-        ("AboutMe", "aboutme", { _ in AnyView(Screen1()) }),
-        ("lost", "lost", { _ in AnyView(Screen3()) }),
-        ("item", "item", { _ in AnyView(Screen4()) }),
-        ("hazard", "hazard", { _ in AnyView(Screen5()) }),
-        ("Object Identifier", "objectfinder", { _ in AnyView(TapTapGoView()) })
-    ]// hold and array of button data rray of button data
-        (" ", "aboutme", { _ in AnyView(Screen1()) }),
-        ("Lost", "information", { _ in AnyView(Screen3()) }),
-        ("Item", "lostitems", { _ in AnyView(Screen4()) }),
-        ("Unsafe Items", "dangerousitems", { _ in AnyView(Screen5()) }),
+    var buttons: [(label: String, imageName: String, destination: (ReminderViewModel) -> AnyView)] {
+        [
+            ("Task", "task", { vm in AnyView(Screen2().environmentObject(vm)) }),
+            ("AboutMe", "aboutme", { _ in AnyView(Screen1()) }),
+            ("lost", "lost", { _ in AnyView(Screen3()) }),
+            ("item", "item", { _ in AnyView(Screen4()) }),
+            ("hazard", "hazard", { _ in AnyView(Screen5()) }),
+            ("Object Identifier", "objectfinder", { _ in AnyView(TapTapGoView()) }),
+            ("Mood", "moodicon", { _ in AnyView(MoodLoggerView(moodStore: moodStore)) })
+        ]
+    }
 
-        ("Mood", "moodicon", { _ in AnyView(MoodLoggerView(moodStore: LastMoodStore())) })
-
-    ]
 
 
     var body: some View {
@@ -38,37 +34,6 @@ struct MenuView: View {
                         .font(.largeTitle)
                         .bold()
                         .padding(.top)
-                    
-                    if !moodStore.lastMoodEmoji.isEmpty {
-                        HStack(spacing: 10) {
-                            Text("Last Logged Mood:")
-                                .font(.title3)
-                                .bold()
-                            Text(moodStore.lastMoodEmoji)
-                                .font(.largeTitle)
-                        }
-                        .padding(.top, 10)
-                    }
-
-
-                    LazyVGrid(columns: columns, spacing: 80) { // <- Increase vertical spacing
-                        ForEach(buttons, id: \.label) { button in
-                            NavigationLink(destination: button.destination(reminderVM)) {
-                                Image(button.imageName)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .cornerRadius(20)
-                                    .frame(width: 285, height: 280)
-                                    .shadow(radius: 5)
-                                    .padding(30) // Optional: add spacing *within* the image frame
-                            }
-                            .frame(height: 210) // Consistent button height
-                            .padding(.horizontal, 4) // Slight spacing between columns
-                        }
-                    }
-                    .padding(.horizontal, 30) // Outer padding
-
-
                     // Upcoming Events Preview
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Upcoming Events")
@@ -91,7 +56,11 @@ struct MenuView: View {
                                         .background(colorFromHex(task.colorHex))
                                         .clipShape(Circle())
                                         .shadow(radius: 2)
-
+ 
+                                    Text("Menu")
+                                        .font(.largeTitle)
+                                        .bold()
+                                        .padding(.top)
                                     VStack(alignment: .leading, spacing: 6) {
                                         Text(task.title)
                                             .font(.title) // ⬅️ made this MUCH larger
@@ -115,7 +84,42 @@ struct MenuView: View {
                             
                         }
                     }
-                    .padding(.bottom)
+                    //.padding(.bottom)
+                    if !moodStore.lastMoodEmoji.isEmpty {
+                        VStack(spacing: 4) {
+                            Text("Last Logged Mood")
+                                .font(.title)
+                                .bold()
+                                .padding(.bottom, 4)
+
+                            Text(moodStore.lastMoodEmoji)
+                                .font(.system(size: 50)) // Make the emoji very large
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.yellow.opacity(0.2))
+                        .cornerRadius(20)
+                    }
+
+
+
+                    LazyVGrid(columns: columns, spacing: 80) { // <- Increase vertical spacing
+                        ForEach(buttons, id: \.label) { button in
+                            NavigationLink(destination: button.destination(reminderVM)) {
+                                Image(button.imageName)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .cornerRadius(20)
+                                    .frame(width: 285, height: 280)
+                                    .shadow(radius: 5)
+                                    .padding(30) // Optional: add spacing *within* the image frame
+                            }
+                            .frame(height: 210) // Consistent button height
+                            .padding(.horizontal, 4) // Slight spacing between columns
+                        }
+                    }
+                    .padding(.horizontal, 30) // Outer padding
+
 
                     Spacer()
                 }
@@ -1612,5 +1616,28 @@ class LastMoodStore: ObservableObject {
 
     init() {
         self.lastMoodEmoji = UserDefaults.standard.string(forKey: "lastMoodEmoji") ?? ""
+    }
+}
+
+struct MoodBannerView: View {
+    @ObservedObject var moodStore: LastMoodStore
+
+    var body: some View {
+        if !moodStore.lastMoodEmoji.isEmpty {
+            VStack(spacing: 4) {
+                Text("Last Logged Mood")
+                    .font(.title)
+                    .bold()
+                    .padding(.bottom, 4)
+
+                Text(moodStore.lastMoodEmoji)
+                    .font(.system(size: 80))
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.yellow.opacity(0.2))
+            .cornerRadius(20)
+            .padding(.horizontal)
+        }
     }
 }
