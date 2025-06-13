@@ -9,6 +9,14 @@ sstruct MenuView: View {
 }
   @StateObject private var reminderVM = ReminderViewModel()
 
+
+struct MenuView: View {
+    @StateObject private var reminderVM = ReminderViewModel()
+    @StateObject private var locationManager = LocationManager()
+    
+    @StateObject private var moodStore = LastMoodStore()
+
+
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
 
     var buttons: [(label: String, imageName: String, destination: (ReminderViewModel) -> AnyView)] {
