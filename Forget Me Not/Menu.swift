@@ -5,6 +5,8 @@ import UIKit
 
 struct MenuView: View {
     @StateObject private var reminderVM = ReminderViewModel()
+    @StateObject private var moodStore = LastMoodStore()
+
 
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
 
@@ -13,9 +15,12 @@ struct MenuView: View {
         (" ", "aboutme", { _ in AnyView(Screen1()) }),
         ("Lost", "information", { _ in AnyView(Screen3()) }),
         ("Item", "lostitems", { _ in AnyView(Screen4()) }),
-        ("Unsafe Items", "dangerousitems", { _ in AnyView(Screen5()) })
+        ("Unsafe Items", "dangerousitems", { _ in AnyView(Screen5()) }),
 
-    ]// hold and array of button data rray of button data
+        ("Mood", "moodicon", { _ in AnyView(MoodLoggerView(moodStore: LastMoodStore())) })
+
+    ]
+
 
     var body: some View {
         NavigationStack {
@@ -25,6 +30,18 @@ struct MenuView: View {
                         .font(.largeTitle)
                         .bold()
                         .padding(.top)
+                    
+                    if !moodStore.lastMoodEmoji.isEmpty {
+                        HStack(spacing: 10) {
+                            Text("Last Logged Mood:")
+                                .font(.title3)
+                                .bold()
+                            Text(moodStore.lastMoodEmoji)
+                                .font(.largeTitle)
+                        }
+                        .padding(.top, 10)
+                    }
+
 
                     // Menu Buttons
                     LazyVGrid(columns: columns, spacing: 20) {
@@ -1345,29 +1362,29 @@ struct Screen5: View {
         let color: Color
         let image: UIImage?
     }
-
+    
     // Replace with your actual images or load them from asset names
     let items: [UnsafeItem] = [
         // 🔥 Hot
         UnsafeItem(name: "Stove Top", category: "Hot", color: .red, image: UIImage(named: "stovetop")),
         UnsafeItem(name: "Iron", category: "Hot", color: .red, image: UIImage(named: "iron")),
-
+        
         // 🔪 Sharp
         UnsafeItem(name: "Knife", category: "Sharp", color: .orange, image: UIImage(named: "knife")),
         UnsafeItem(name: "Scissors", category: "Sharp", color: .orange, image: UIImage(named: "scissors")),
-
+        
         // 🧪 Chemical
         UnsafeItem(name: "Laundry Pods", category: "Chemical", color: .purple, image: UIImage(named: "laundrypods")),
         UnsafeItem(name: "Cleaner Spray", category: "Chemical", color: .purple, image: UIImage(named: "cleaner")),
         UnsafeItem(name: "Gasoline", category: "Chemical", color: .purple, image: UIImage(named: "gasoline"))
     ]
-
+    
     var groupedItems: [String: [UnsafeItem]] {
         Dictionary(grouping: items, by: { $0.category })
     }
-
+    
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
-
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 30) {
@@ -1375,14 +1392,14 @@ struct Screen5: View {
                     .font(.largeTitle)
                     .bold()
                     .padding(.horizontal)
-
+                
                 ForEach(groupedItems.keys.sorted(), id: \.self) { category in
                     VStack(alignment: .leading, spacing: 12) {
                         Text(category)
                             .font(.title)
                             .bold()
                             .padding(.horizontal)
-
+                        
                         LazyVGrid(columns: columns, spacing: 20) {
                             ForEach(groupedItems[category]!) { item in
                                 VStack(spacing: 10) {
@@ -1399,7 +1416,7 @@ struct Screen5: View {
                                             .frame(height: 120)
                                             .overlay(Text("No Image").foregroundColor(.gray))
                                     }
-
+                                    
                                     Text(item.name)
                                         .font(.title3)
                                         .bold()
@@ -1417,5 +1434,172 @@ struct Screen5: View {
             }
             .padding(.vertical)
         }
+    }
+}
+
+// MARK: - Mood Logger
+
+struct MoodEntry: Identifiable, Codable {
+    let id = UUID()
+    var mood: String
+    var emoji: String
+    var reason: String
+    var timestamp: Date
+}
+
+class MoodLoggerViewModel: ObservableObject {
+    @Published var entries: [MoodEntry] = []
+    private let key = "moodEntries"
+
+    init() {
+        load()
+    }
+
+    func add(_ entry: MoodEntry) {
+        entries.append(entry)
+        save()
+    }
+
+    func save() {
+        if let data = try? JSONEncoder().encode(entries) {
+            UserDefaults.standard.set(data, forKey: key)
+        }
+    }
+
+    func load() {
+        if let data = UserDefaults.standard.data(forKey: key),
+           let decoded = try? JSONDecoder().decode([MoodEntry].self, from: data) {
+            entries = decoded
+        }
+    }
+}
+
+struct MoodLoggerView: View {
+    @StateObject private var viewModel = MoodLoggerViewModel()
+    @ObservedObject var moodStore: LastMoodStore
+    @State private var selectedMood: (emoji: String, label: String, color: Color)? = nil
+    @State private var reason = ""
+    @State private var showConfirmation = false
+
+    let moods = [
+        ("😄", "Happy", Color.yellow),
+        ("😠", "Angry", Color.red),
+        ("😢", "Sad", Color.blue),
+        ("😐", "Okay", Color.gray),
+        ("😨", "Scared", Color.purple)
+    ]
+
+    let needs = [
+        "I'm hungry", "I need the bathroom", "I'm tired", "I want to talk", "I need help"
+    ]
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                Text("How are you feeling?")
+                    .font(.largeTitle)
+                    .bold()
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 20) {
+                        ForEach(moods, id: \.1) { mood in
+                            VStack {
+                                Text(mood.0)
+                                    .font(.system(size: 60))
+                                Text(mood.1)
+                                    .font(.headline)
+                            }
+                            .padding()
+                            .frame(width: 120, height: 120)
+                            .background(mood.2.opacity(selectedMood?.label == mood.1 ? 0.5 : 0.2))
+                            .cornerRadius(20)
+                            .onTapGesture {
+                                selectedMood = mood
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("What do you need?")
+                        .font(.headline)
+                        .padding(.leading)
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack {
+                            ForEach(needs, id: \.self) { need in
+                                Button(action: {
+                                    reason = need
+                                }) {
+                                    Text(need)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 8)
+                                        .background(Color.teal.opacity(0.2))
+                                        .cornerRadius(10)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+
+                TextField("Other reason...", text: $reason)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+
+                Button(action: logMood) {
+                    HStack {
+                        Image(systemName: "paperplane.fill")
+                        Text("Log Mood")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(selectedMood == nil ? Color.gray : Color.green)
+                    .cornerRadius(14)
+                }
+                .disabled(selectedMood == nil)
+                .padding(.horizontal)
+
+                Spacer()
+            }
+            .padding()
+            .navigationTitle("Current Mood")
+            .alert("Mood Saved!", isPresented: $showConfirmation) {
+                Button("OK", role: .cancel) { }
+            }
+        }
+    }
+
+    private func logMood() {
+        guard let mood = selectedMood else { return }
+        let entry = MoodEntry(
+            mood: mood.label,
+            emoji: mood.0,
+            reason: reason,
+            timestamp: Date()
+        )
+        viewModel.add(entry)
+        moodStore.lastMoodEmoji = mood.0
+        reason = ""
+        selectedMood = nil
+        showConfirmation = true
+    }
+
+}
+
+class LastMoodStore: ObservableObject {
+    @Published var lastMoodEmoji: String {
+        didSet {
+            UserDefaults.standard.set(lastMoodEmoji, forKey: "lastMoodEmoji")
+        }
+    }
+
+    init() {
+        self.lastMoodEmoji = UserDefaults.standard.string(forKey: "lastMoodEmoji") ?? ""
     }
 }
