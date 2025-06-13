@@ -3,12 +3,11 @@ import AVFoundation
 import UIKit
 import UserNotifications
 
-
-
-struct MenuView: View {
-    @StateObject private var reminderVM = ReminderViewModel()
-    @StateObject private var moodStore = LastMoodStore()
-
+sstruct MenuView: View {
+    @ObservedObject var moodStore: LastMoodStore  // ✅ required
+    // ...
+}
+  @StateObject private var reminderVM = ReminderViewModel()
 
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
 
@@ -24,13 +23,12 @@ struct MenuView: View {
         ]
     }
 
-
-
     var body: some View {
         NavigationStack {
             ScrollView {
-                // Upcoming Events Preview
                 VStack(spacing: 50) {
+                    
+                    // ✅ Upcoming Events Section
                     Text("Upcoming Events")
                         .font(.largeTitle)
                         .bold()
@@ -46,7 +44,7 @@ struct MenuView: View {
                                 Image(systemName: task.iconName)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 50, height: 50) // slightly increased icon size
+                                    .frame(width: 50, height: 50)
                                     .padding()
                                     .background(colorFromHex(task.colorHex))
                                     .clipShape(Circle())
@@ -54,14 +52,13 @@ struct MenuView: View {
 
                                 VStack(alignment: .leading, spacing: 6) {
                                     Text(task.title)
-                                        .font(.title) // ⬅️ made this MUCH larger
+                                        .font(.title)
                                         .bold()
 
                                     Text(task.timeRange)
-                                        .font(.title2) // Bigger font
-                                        .bold()        // Emphasize
-                                        .foregroundColor(.primary) // Dark text for visibility
-
+                                        .font(.title2)
+                                        .bold()
+                                        .foregroundColor(.primary)
                                 }
 
                                 Spacer()
@@ -71,67 +68,9 @@ struct MenuView: View {
                             .cornerRadius(20)
                             .padding(.horizontal, 10)
                         }
-
-                        
                     }
-                }
-                
-                VStack(spacing: 50) {
-                    Text("Menu")
-                        .font(.largeTitle)
-                        .bold()
-                        .padding(.top)
-                    // Upcoming Events Preview
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Upcoming Events")
-                            .font(.largeTitle)
-                            .bold()
-                            .padding(.leading)
 
-                        if reminderVM.sortedTasks.isEmpty {
-                            Text("No upcoming tasks.")
-                                .foregroundColor(.gray)
-                                .padding(.horizontal)
-                        } else {
-                            ForEach(reminderVM.sortedTasks.prefix(3)) { task in
-                                HStack(spacing: 16) {
-                                    Image(systemName: task.iconName)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 50, height: 50) // slightly increased icon size
-                                        .padding()
-                                        .background(colorFromHex(task.colorHex))
-                                        .clipShape(Circle())
-                                        .shadow(radius: 2)
- 
-                                    Text("Menu")
-                                        .font(.largeTitle)
-                                        .bold()
-                                        .padding(.top)
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        Text(task.title)
-                                            .font(.title) // ⬅️ made this MUCH larger
-                                            .bold()
-
-                                        Text(task.timeRange)
-                                            .font(.title2) // Bigger font
-                                            .bold()        // Emphasize
-                                            .foregroundColor(.primary) // Dark text for visibility
-
-                                    }
-
-                                    Spacer()
-                                }
-                                .padding()
-                                .background(Color.teal.opacity(0.2))
-                                .cornerRadius(20)
-                                .padding(.horizontal, 10)
-                            }
-
-                            
-                        }
-                    }
-                    //.padding(.bottom)
+                    // ✅ Mood Banner Moved Above Menu Header
                     if !moodStore.lastMoodEmoji.isEmpty {
                         VStack(spacing: 4) {
                             Text("Last Logged Mood")
@@ -140,7 +79,7 @@ struct MenuView: View {
                                 .padding(.bottom, 4)
 
                             Text(moodStore.lastMoodEmoji)
-                                .font(.system(size: 50)) // Make the emoji very large
+                                .font(.system(size: 50))
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -148,9 +87,13 @@ struct MenuView: View {
                         .cornerRadius(20)
                     }
 
+                    // ✅ Menu Title
+                    Text("Menu")
+                        .font(.largeTitle)
+                        .bold()
+                        .padding(.top)
 
-
-                    LazyVGrid(columns: columns, spacing: 80) { // <- Increase vertical spacing
+                    LazyVGrid(columns: columns, spacing: 80) {
                         ForEach(buttons, id: \.label) { button in
                             NavigationLink(destination: button.destination(reminderVM)) {
                                 Image(button.imageName)
@@ -159,14 +102,13 @@ struct MenuView: View {
                                     .cornerRadius(20)
                                     .frame(width: 285, height: 280)
                                     .shadow(radius: 5)
-                                    .padding(30) // Optional: add spacing *within* the image frame
+                                    .padding(30)
                             }
-                            .frame(height: 210) // Consistent button height
-                            .padding(.horizontal, 4) // Slight spacing between columns
+                            .frame(height: 210)
+                            .padding(.horizontal, 4)
                         }
                     }
-                    .padding(.horizontal, 30) // Outer padding
-
+                    .padding(.horizontal, 30)
 
                     Spacer()
                 }
@@ -174,6 +116,7 @@ struct MenuView: View {
         }
     }
 }
+
 
 
 
@@ -206,7 +149,7 @@ struct MenuButton: View {
 
 
 #Preview {
-    MenuView()
+    MenuView(moodStore: <#LastMoodStore#>)
 }
 // ... all your MenuView and MenuButton code above
 struct PersonalFact: Identifiable, Codable {
@@ -1545,10 +1488,11 @@ struct MoodLoggerView: View {
 
     let moods = [
         ("😄", "Happy", Color.yellow),
-        ("😠", "Angry", Color.red),
+        ("😡", "Angry", Color.red),
         ("😢", "Sad", Color.blue),
         ("😐", "Okay", Color.gray),
-        ("😨", "Scared", Color.purple)
+        ("😨", "Scared", Color.purple),
+        ("🆘", "Need Help!", Color.purple)
     ]
 
     let needs = [

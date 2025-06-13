@@ -1,17 +1,9 @@
-//
-//  LoginView.swift
-//  Forget Me Not
-//
-//  Created by Zara on 2025-05-01.
-//
-
 import SwiftUI
 import Firebase
 import FirebaseAuth
 import Combine
 
 struct LoginView: View {
-    @ObservedObject private var keyboard = KeyboardResponder()
 
     @State private var showAlert = false
     @State private var errorMessage = ""
@@ -36,7 +28,7 @@ struct LoginView: View {
 
     var content: some View {
         ZStack {
-            Color.white.ignoresSafeArea()
+            Color(.systemBackground).ignoresSafeArea() // ✅ Changed from .white
 
             RoundedRectangle(cornerRadius: 30, style: .continuous)
                 .foregroundStyle(.linearGradient(colors: [.indigo, .teal], startPoint: .topLeading, endPoint: .bottomTrailing))
@@ -56,13 +48,13 @@ struct LoginView: View {
                         .offset(y: 30)
 
                     TextField("Email", text: $email)
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary) // ✅ Changed from .black
                         .textFieldStyle(.plain)
                         .padding(.top, 150)
                         .placeholder(when: email.isEmpty) {
                             Text("Email")
                                 .padding(.top, 150)
-                                .foregroundColor(.black)
+                                .foregroundColor(.secondary) // ✅ Changed from .black
                                 .bold()
                                 .font(.system(size: 22))
                         }
@@ -71,11 +63,11 @@ struct LoginView: View {
                         .frame(width: 350, height: 1)
 
                     SecureField("Password", text: $password)
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary) // ✅ Changed from .black
                         .textFieldStyle(.plain)
                         .placeholder(when: password.isEmpty) {
                             Text("Password")
-                                .foregroundColor(.black)
+                                .foregroundColor(.secondary) // ✅ Changed from .black
                                 .bold()
                                 .font(.system(size: 22))
                         }
@@ -126,31 +118,8 @@ struct LoginView: View {
                                     .fill(.linearGradient(colors: [.teal, .blue], startPoint: .top, endPoint: .bottomTrailing))
                             )
                     }
-                    
-                    
                     .padding(.top)
                     .offset(y: 100)
-                    
-//                    if !isLoginMode {
-//                        Button("Resend Verification Email") {
-//                            if let user = Auth.auth().currentUser, !user.isEmailVerified {
-//                                user.sendEmailVerification { error in
-//                                    if let error = error {
-//                                        errorMessage = error.localizedDescription
-//                                    } else {
-//                                        errorMessage = "Verification email resent."
-//                                    }
-//                                    showAlert = true
-//                                }
-//                            } else {
-//                                errorMessage = "Please register or log in first."
-//                                showAlert = true
-//                            }
-//                        }
-//                        .foregroundColor(.blue)
-//                        .underline()
-//                        .font(.system(size: 16))
-//                    }
 
                     Button {
                         isLoginMode.toggle()
@@ -164,8 +133,6 @@ struct LoginView: View {
                     .offset(y: 100)
                 }
                 .frame(width: 350)
-                .padding(.bottom, keyboard.keyboardHeight)
-                .animation(.easeOut(duration: 0.25), value: keyboard.keyboardHeight)
             }
             .onTapGesture {
                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
@@ -205,7 +172,6 @@ struct LoginView: View {
         }
     }
 
-
     func login() {
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
             if let error = error {
@@ -220,7 +186,6 @@ struct LoginView: View {
             }
         }
     }
-
 }
 
 extension View {
@@ -261,7 +226,6 @@ class LocationSharingManager: NSObject, CLLocationManagerDelegate, ObservableObj
         dbRef.child("locations").child(userID).setValue(locationData)
     }
 }
-
 
 #Preview {
     LoginView()

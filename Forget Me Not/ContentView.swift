@@ -4,6 +4,11 @@ import FirebaseAuth
 import FirebaseFirestore
 
 struct ContentView: View {
+    
+    @StateObject private var moodStore = LastMoodStore()
+    
+    
+    
     let columns = [
         GridItem(.flexible()),
         GridItem(.flexible())
@@ -17,7 +22,7 @@ struct ContentView: View {
                 Button("Log Out") {
                     do {
                         try Auth.auth().signOut()
-                        isLoggedIn = false // triggers AppRootView to show LoginView
+                        isLoggedIn = false
                     } catch {
                         print("Error logging out: \(error.localizedDescription)")
                     }
@@ -26,13 +31,15 @@ struct ContentView: View {
                 .padding()
 
                 Spacer()
+
                 Text("Who are you?")
                     .font(.system(size: 40, weight: .bold))
+                    .foregroundColor(.primary)
                     .padding(.bottom, 10)
 
                 LazyVGrid(columns: columns, spacing: 20) {
                     // CAREGIVER
-                    NavigationLink(destination: CareView()) {
+                    NavigationLink(destination: CareView(moodStore: moodStore)) {
                         VStack {
                             Image("caregiver")
                                 .resizable()
@@ -40,11 +47,11 @@ struct ContentView: View {
                                 .frame(width: 130, height: 120)
                             Text("Caregiver")
                                 .font(.system(size: 25, weight: .semibold))
-                                .foregroundColor(.blue)
+                                .foregroundColor(.accentColor)
                         }
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color.blue.opacity(0.1))
+                        .background(Color(.secondarySystemBackground))
                         .cornerRadius(12)
                     }
                     .simultaneousGesture(TapGesture().onEnded {
@@ -52,7 +59,7 @@ struct ContentView: View {
                     })
 
                     // CLIENT
-                    NavigationLink(destination: MenuView()) {
+                    NavigationLink(destination: MenuView(moodStore: moodStore)) {
                         VStack {
                             Image("client")
                                 .resizable()
@@ -60,11 +67,11 @@ struct ContentView: View {
                                 .frame(width: 130, height: 120)
                             Text("Client")
                                 .font(.system(size: 25, weight: .semibold))
-                                .foregroundColor(.blue)
+                                .foregroundColor(.accentColor)
                         }
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color.blue.opacity(0.1))
+                        .background(Color(.secondarySystemBackground))
                         .cornerRadius(12)
                     }
                     .simultaneousGesture(TapGesture().onEnded {
@@ -72,10 +79,11 @@ struct ContentView: View {
                     })
                 }
                 .padding(.horizontal, 40)
+
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.white)
+            .background(Color(.systemBackground))
         }
     }
 
